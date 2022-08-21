@@ -42,7 +42,7 @@ function start() {
 
   function test1() {
     const start = performance.now();
-    for (let i = 0; i < 1000; ++i) {
+    for (let i = 0; i < 10000; ++i) {
       for (let j = 0; i < 1000; ++i) {
         view[j] = Math.random() * 256;
       }
@@ -53,13 +53,13 @@ function start() {
 
   function test2() {
     const start = performance.now();
-    for (let i = 0; i < 1000; ++i) {
+    for (let i = 0; i < 10000; ++i) {
       for (let j = 0; i < 1000; ++i) {
         array[j][0] = Math.random() * 256;
       }
     }
     const end = performance.now();
-    console.log("test2 time", (end - start));
+    console.log("test2 time: ", (end - start));
   }
 }
 
