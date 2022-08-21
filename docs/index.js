@@ -37,6 +37,8 @@ function start() {
     }
     return array;
   })();
+  test1();
+  test2();
 
   function test1() {
     const start = performance.now();
