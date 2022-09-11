@@ -14,12 +14,38 @@ function isBareObject(o) {
 class MemoryBlock {
   #arrayBuffer;
   constructor(args) {
-    if (args.hasOwnProperty("length")) {
-      #arrayBuffer = new ArrayBuffer(args.length);
-    } else if (args.hasOwnProperty("arrayBuffer")) {
-      #arrayBuffer = args.arrayBuffer;
+    if (isBareObject(args)) {
+      if (Object.hasOwn(args, "arrayBuffer")) {
+        this.#arrayBuffer = args.arrayBuffer;
+        let shared;
+        if (this.#arrayBuffer instanceof ArrayBuffer) {
+          shared = false;
+        } else if (this.#arrayBuffer instanceof SharedArrayBuffer) {
+          shared = true;
+        } else {
+          throw new TypeError("Argument arrayBuffer must be a of type ArrayBuffer or SharedArrayBuffer.");
+        }
+        if (Object.hasOwn(args, "length")) {
+          if (typeof args.length !== "number") {
+            throw new TypeError("Argument arrayBuffer must be a of type ArrayBuffer or SharedArrayBuffer.");
+          }
+          if (args.length !== this.#arrayBuffer) {
+            throw new Error("Argument length does not match.");
+          }
+        }
+        if (Object.hasOwn(args, "shared")) {
+          if (args.shared !== shared) {
+            throw new Error("Argument shared does not match.");
+          }
+        }
+      } else {
+        if (!(Object.hasOwn(args, "length"))) {
+          throw new Error("Argument length is required.");
+        }
+        this.#arrayBuffer = new ArrayBuffer(args.length);
+      }
     } else {
-      throw new Error("Invalid Arguments");
+      throw new TypeError("MemoryBlock constructor requires a bare object.");
     }
   }
   get length() {
@@ -29,7 +55,11 @@ class MemoryBlock {
     return this.#arrayBuffer;
   }
   static fromIterable(args) {
-    if (args[Symbol.iterator] === undefined) {
+    if (isBareObject(args)) {
+      if (!(Object.hasOwn(args, "iterable"))) {
+        throw new Error("Argument iterable is required.");
+      }
+    } else if (args[Symbol.iterator] === undefined) {
       throw new Error("Invalid Arguments");
     }
     let totalLength = 0;
