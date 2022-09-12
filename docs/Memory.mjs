@@ -14,38 +14,48 @@ function isBareObject(o) {
 class MemoryBlock {
   #arrayBuffer;
   constructor(args) {
-    if (isBareObject(args)) {
-      if (Object.hasOwn(args, "arrayBuffer")) {
-        this.#arrayBuffer = args.arrayBuffer;
-        let shared;
-        if (this.#arrayBuffer instanceof ArrayBuffer) {
-          shared = false;
-        } else if (this.#arrayBuffer instanceof SharedArrayBuffer) {
-          shared = true;
-        } else {
-          throw new TypeError("Argument arrayBuffer must be a of type ArrayBuffer or SharedArrayBuffer.");
-        }
-        if (Object.hasOwn(args, "length")) {
-          if (typeof args.length !== "number") {
-            throw new TypeError("Argument arrayBuffer must be a of type ArrayBuffer or SharedArrayBuffer.");
-          }
-          if (args.length !== this.#arrayBuffer) {
-            throw new Error("Argument length does not match.");
-          }
-        }
-        if (Object.hasOwn(args, "shared")) {
-          if (args.shared !== shared) {
-            throw new Error("Argument shared does not match.");
-          }
-        }
+    if (!(isBareObject(args))) {
+      throw new TypeError("MemoryBlock constructor requires a bare object.");
+    }
+    if (Object.hasOwn(args, "arrayBuffer")) {
+      this.#arrayBuffer = args.arrayBuffer;
+      let shared;
+      if (this.#arrayBuffer instanceof ArrayBuffer) {
+        shared = false;
+      } else if (this.#arrayBuffer instanceof SharedArrayBuffer) {
+        shared = true;
       } else {
-        if (!(Object.hasOwn(args, "length"))) {
-          throw new Error("Argument length is required.");
+        throw new TypeError("Argument \"arrayBuffer\" of MemoryBlock constructor must be of type ArrayBuffer or SharedArrayBuffer.");
+      }
+      if (Object.hasOwn(args, "length")) {
+        if (typeof args.length !== "number") {
+          throw new TypeError("Argument \"arrayBuffer\" of MemoryBlock constructor must be of type ArrayBuffer or SharedArrayBuffer.");
         }
-        this.#arrayBuffer = new ArrayBuffer(args.length);
+        if (args.length !== this.#arrayBuffer) {
+          throw new Error("Argument \"length\" of MemoryBlock constructor does not match.");
+        }
+      }
+      if (Object.hasOwn(args, "shared")) {
+        if (args.shared !== shared) {
+          throw new Error("Argument \"shared\" of MemoryBlock constructor does not match.");
+        }
       }
     } else {
-      throw new TypeError("MemoryBlock constructor requires a bare object.");
+      if (!(Object.hasOwn(args, "length"))) {
+        throw new Error("Argument \"length\" of MemoryBlock constructor is required.");
+      }
+      let shared = false;
+      if (Object.hasOwn(args, "shared")) {
+        shared = (args.shared === true);
+      }
+      if (shared) {
+        if (!(self.crossOriginIsolated)) {
+          throw new Error("Creating a shared MemoryBlock requires Cross-Origin Isolation.");
+        }
+        this.#arrayBuffer = new SharedArrayBuffer(args.length);
+      } else {
+        this.#arrayBuffer = new ArrayBuffer(args.length);
+      }
     }
   }
   get length() {
