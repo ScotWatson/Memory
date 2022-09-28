@@ -108,7 +108,7 @@ export class MemoryBlock {
       }
     }
   }
-  get shared() {
+  get shareable() {
     try {
       if (this.#arrayBuffer instanceof ArrayBuffer) {
         return false;
@@ -116,7 +116,7 @@ export class MemoryBlock {
         return true;
       } else {
         throw new ErrorHandling.AnticipatedError({
-          functionName: "get MemoryBlock.shared",
+          functionName: "get MemoryBlock.shareable",
           message: "this.#arrayBuffer must be of type ArrayBuffer or SharedArrayBuffer.",
         });
       }
@@ -125,7 +125,7 @@ export class MemoryBlock {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "get MemoryBlock.shared",
+          functionName: "get MemoryBlock.shareable",
           cause: e,
         });
       }
@@ -248,7 +248,7 @@ export class MemoryView {
       }
     }
   }
-  get shared() {
+  get shareable() {
     try {
       return (this.#arrayBuffer instanceof self.SharedArrayBuffer);
     } catch (e) {
@@ -256,7 +256,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "get MemoryView.shared",
+          functionName: "get MemoryView.shareable",
           cause: e,
         });
       }
