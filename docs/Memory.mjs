@@ -9,10 +9,10 @@ export class MemoryBlock {
   #arrayBuffer;
   constructor(args) {
     try {
-      if (args instanceof self.ArrayBuffer) {
+      if (args instanceof ArrayBuffer) {
         this.#arrayBuffer = args;
         return;
-      } else if (args instanceof self.SharedArrayBuffer) {
+      } else if (args instanceof SharedArrayBuffer) {
         this.#arrayBuffer = args;
         return;
       } else if (!(ErrorHandling.isBareObject(args))) {
@@ -541,6 +541,20 @@ export class MemoryView {
       }
     }
   }
+  toDataView() {
+    try {
+      return new DataView(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
+    } catch (e) {
+      if (e instanceof ErrorHandling.AnticipatedError) {
+        throw e;
+      } else {
+        throw new ErrorHandling.UnanticipatedError({
+          functionName: "MemoryView.toDataView",
+          cause: e,
+        });
+      }
+    }
+  }
 }
 
 export function createCopy(args) {
@@ -565,8 +579,6 @@ export function createSlicedCopy(args) {
   return newMemoryBlock;
 }
 
-// A memory view
-// Allows array-like access to memory as the given type
 export class DataArray {
   #memoryView;
   #ElementClass;
@@ -867,8 +879,6 @@ export class DataArray {
   }
 }
 
-// A memory view
-// An unsigned integer that occupies exactly 1 byte
 export class Uint8 {
   #view;
   static get BYTES_PER_ELEMENT() {
@@ -876,19 +886,30 @@ export class Uint8 {
   }
   constructor (args) {
     try {
-      if (!(args.hasOwnProperty("memoryView"))) {
+      let thisMemoryView;
+      if (args instanceof MemoryView) {
+        thisMemoryView = args;
+      } else if (ErrorHandling.isBareObject(args)) {
+        if (!(args.hasOwnProperty("memoryView"))) {
+          throw new ErrorHandling.AnticipatedError({
+            functionName: "Uint8 constructor",
+            message: "Argument \"memoryView\" is required.",
+          });
+        }
+        thisMemoryView = args.memoryView;
+      } else {
         throw new ErrorHandling.AnticipatedError({
           functionName: "Uint8 constructor",
-          message: "memoryView is required.",
+          message: "Invalid Arguments",
         });
       }
-      if (args.memoryView.byteLength !== this.BYTES_PER_ELEMENT) {
+      if (thisMemoryView.byteLength !== this.BYTES_PER_ELEMENT) {
         throw new ErrorHandling.AnticipatedError({
           functionName: "Uint8 constructor",
           message: "memoryView length is invalid.",
         });
       }
-      this.#view = new Uint8Array(memoryView.);
+      this.#view = thisMemoryView.toUint8Array();
     } catch (e) {
       if (e instanceof ErrorHandling.AnticipatedError) {
         throw e;
@@ -902,13 +923,36 @@ export class Uint8 {
   }
   setValue(args) {
     try {
-      if (typeof args !== "number") {
+      if (typeof args === "number") {
+        this.#view[0] = args;
+        return;
+      } else if (ErrorHandling.isBareObject(args)) {
+        if (!(args.hasOwnProperty("value"))) {
+          throw new ErrorHandling.AnticipatedError({
+            functionName: "Uint8.setValue",
+            message: "Argument \"value\" is required.",
+          });
+        }
+        if (typeof args.value !== "number") {
+          throw new ErrorHandling.AnticipatedError({
+            functionName: "Uint8.setValue",
+            message: "Argument \"value\" must be a number.",
+          });
+        }
+        if (!(Number.isInteger(args.value))) {
+          throw new ErrorHandling.AnticipatedError({
+            functionName: "Uint8.setValue",
+            message: "Argument \"value\" must be an integer.",
+          });
+        }
+        this.#view[0] = args.value;
+        return;
+      } else {
         throw new ErrorHandling.AnticipatedError({
           functionName: "Uint8.setValue",
-          message: "args must be a number.",
+          message: "Invalid Arguments",
         });
       }
-      this.#view[0] = args.newValue;
     } catch (e) {
       if (e instanceof ErrorHandling.AnticipatedError) {
         throw e;
