@@ -605,11 +605,11 @@ export class DataArray {
         });
       }
       this.#ElementClass = args.ElementClass;
-      this.#length = this.#memoryView.byteLength / this.#ElementClass.BYTES_PER_ELEMENT;
+      this.#length = this.#memoryView.byteLength / this.#ElementClass.BYTE_LENGTH;
       if (!(Number.isInteger(this.#length))) {
         throw new ErrorHandling.AnticipatedError({
           functionName: "DataArray constructor",
-          message: "memoryView.byteLength is not a multiple of ElementClass.BYTES_PER_ELEMENT.",
+          message: "memoryView.byteLength is not a multiple of ElementClass.BYTE_LENGTH.",
         });
       }
       if (Object.hasOwn(args, "length")) {
@@ -675,12 +675,11 @@ export class DataArray {
   }
   get [Symbol.iterator]() {
     try {
-      function* iterator() {
+      return (function* () {
         for (let i = 0; i < this.#length; ++i) {
           yield this.at(i);
         }
-      };
-      return iterator;
+      });
     } catch (e) {
       if (e instanceof ErrorHandling.AnticipatedError) {
         throw e;
@@ -877,6 +876,74 @@ export class DataArray {
       }
     }
   }
+  equals(args) {
+    try {
+      if (!("valueOf" in this.#ElementClass.prototype)) {
+        throw new ErrorHandling.AnticipatedError({
+          functionName: "DataArray.equals",
+          message: "Element class does not support valueOf.",
+        });
+      }
+      let other;
+      if (args instanceof DataArray) {
+        other = args;
+      } else if (ErrorHandling.isBareObject(args)) {
+        if (!(args.hasOwnProperty("dataArray"))) {
+          throw new ErrorHandling.AnticipatedError({
+            functionName: "DataArray.equals",
+            message: "Argument \"dataArray\" is required.",
+          });
+        }
+        if (!(args.dataArray instanceof DataArray)) {
+          throw new ErrorHandling.AnticipatedError({
+            functionName: "DataArray.equals",
+            message: "Argument \"dataArray\" must be an instance of DataArray.",
+          });
+        }
+        other = args.dataArray;
+      } else {
+        throw new ErrorHandling.AnticipatedError({
+          functionName: "DataArray.equals",
+          message: "Invalid Arguments.",
+        });
+      }
+      if (!("valueOf" in other.ElementClass.prototype)) {
+        throw new ErrorHandling.AnticipatedError({
+          functionName: "DataArray.equals",
+          message: "dataArray's Element class does not support valueOf.",
+        });
+      }
+      const thisIter = this[Symbol.iterator]();
+      const otherIter = other[Symbol.iterator]();
+      let thisResult = thisIter.next();
+      let otherResult = otherIter.next();
+      while (!(thisResult.done) && !(otherResult.done)) {
+        const thisResultValue = thisResult.value.valueOf();
+        const otherResultValue = otherResult.value.valueOf();
+        if (!("equals" in thisResultValue)) {
+          throw new ErrorHandling.AnticipatedError({
+            functionName: "DataArray.equals",
+            message: "No equals function provided on element.",
+          });
+        }
+        if (!(thisResultValue.equals(otherResultValue))) {
+          return false;
+        }
+        thisResult = thisIter.next();
+        otherResult = otherIter.next();
+      }
+      return true;
+    } catch (e) {
+      if (e instanceof ErrorHandling.AnticipatedError) {
+        throw e;
+      } else {
+        throw new ErrorHandling.UnanticipatedError({
+          functionName: "DataArray.equals",
+          cause: e,
+        });
+      }
+    }
+  }
 }
 
 export class Uint8 {
@@ -884,7 +951,7 @@ export class Uint8 {
   static get BYTE_LENGTH() {
     return 1;
   }
-  constructor (args) {
+  constructor(args) {
     try {
       let thisView;
       if (args instanceof View) {
@@ -903,7 +970,7 @@ export class Uint8 {
           message: "Invalid Arguments",
         });
       }
-      if (thisView.byteLength !== this.BYTES_PER_ELEMENT) {
+      if (thisView.byteLength !== this.BYTE_LENGTH) {
         throw new ErrorHandling.AnticipatedError({
           functionName: "Uint8 constructor",
           message: "memoryView length is invalid.",
@@ -921,7 +988,7 @@ export class Uint8 {
       }
     }
   }
-  setValue(args) {
+  set(args) {
     try {
       if (typeof args === "number") {
         this.#view[0] = args;
@@ -929,19 +996,19 @@ export class Uint8 {
       } else if (ErrorHandling.isBareObject(args)) {
         if (!(args.hasOwnProperty("value"))) {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "Uint8.setValue",
+            functionName: "Uint8.set",
             message: "Argument \"value\" is required.",
           });
         }
         if (typeof args.value !== "number") {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "Uint8.setValue",
+            functionName: "Uint8.set",
             message: "Argument \"value\" must be a number.",
           });
         }
         if (!(Number.isInteger(args.value))) {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "Uint8.setValue",
+            functionName: "Uint8.set",
             message: "Argument \"value\" must be an integer.",
           });
         }
@@ -949,7 +1016,7 @@ export class Uint8 {
         return;
       } else {
         throw new ErrorHandling.AnticipatedError({
-          functionName: "Uint8.setValue",
+          functionName: "Uint8.set",
           message: "Invalid Arguments",
         });
       }
@@ -958,7 +1025,7 @@ export class Uint8 {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "Uint8.setValue",
+          functionName: "Uint8.set",
           cause: e,
         });
       }
@@ -973,6 +1040,32 @@ export class Uint8 {
       } else {
         throw new ErrorHandling.UnanticipatedError({
           functionName: "Uint8.valueOf",
+          cause: e,
+        });
+      }
+    }
+  }
+  equals(args) {
+    try {
+      let value;
+      if (ErrorHandling.isBareObject(args)) {
+        if (!(args.hasOwnProperty("value"))) {
+          throw new ErrorHandling.AnticipatedError({
+            functionName: "Uint8.equals",
+            message: "Argument \"value\" is required.",
+          });
+        }
+        value = args.value;
+      } else {
+        value = args;
+      }
+      return (this.valueOf() === value.valueOf());
+    } catch (e) {
+      if (e instanceof ErrorHandling.AnticipatedError) {
+        throw e;
+      } else {
+        throw new ErrorHandling.UnanticipatedError({
+          functionName: "Uint8.equals",
           cause: e,
         });
       }
