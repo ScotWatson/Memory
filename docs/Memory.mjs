@@ -5,7 +5,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 import * as ErrorHandling from "https://scotwatson.github.io/ErrorHandling/ErrorHandling.mjs";
 
-export class MemoryBlock {
+export class Block {
   #arrayBuffer;
   constructor(args) {
     try {
@@ -17,7 +17,7 @@ export class MemoryBlock {
         return;
       } else if (!(ErrorHandling.isBareObject(args))) {
         throw new ErrorHandling.InvalidInputError({
-          functionName: "MemoryBlock constructor",
+          functionName: "Block constructor",
           argumentName: "",
           message: "requires a bare object, ArrayBuffer, or SharedArrayBuffer.",
         });
@@ -26,7 +26,7 @@ export class MemoryBlock {
       if (Object.hasOwn(args, "shared")) {
         if (typeof args.shared !== "boolean") {
           throw new ErrorHandling.InvalidInputError({
-            functionName: "MemoryBlock constructor",
+            functionName: "Block constructor",
             argumentName: "shared",
             message: "requires a boolean.",
           });
@@ -41,7 +41,7 @@ export class MemoryBlock {
           shared = true;
         } else {
           throw new ErrorHandling.InvalidInputError({
-            functionName: "MemoryBlock constructor",
+            functionName: "Block constructor",
             argumentName: "arrayBuffer",
             message: "requires ArrayBuffer or SharedArrayBuffer.",
           });
@@ -49,7 +49,7 @@ export class MemoryBlock {
         if (Object.hasOwn(args, "shared")) {
           if (shared !== args.shared) {
             throw new ErrorHandling.AnticipatedError({
-              functionName: "MemoryBlock constructor",
+              functionName: "Block constructor",
               message: "Argument \"shared\" does not match the class of argument \"arrayBuffer\".",
             });
           }
@@ -58,7 +58,7 @@ export class MemoryBlock {
         if (Object.hasOwn(args, "byteLength")) {
           if (this.#arrayBuffer !== args.byteLength) {
             throw new ErrorHandling.AnticipatedError({
-              functionName: "MemoryBlock constructor",
+              functionName: "Block constructor",
               message: "Argument \"byteLength\" does not match the length of argument \"arrayBuffer\".",
             });
           }
@@ -66,15 +66,15 @@ export class MemoryBlock {
       } else {
         if (!(Object.hasOwn(args, "byteLength"))) {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryBlock constructor",
-            message: "Argument \"byteLength\" of MemoryBlock constructor is required."
+            functionName: "Block constructor",
+            message: "Argument \"byteLength\" of Block constructor is required."
           });
         }
         if (argsShared) {
           if (!(self.crossOriginIsolated)) {
             throw new ErrorHandling.AnticipatedError({
-              functionName: "MemoryBlock constructor",
-              message: "Creating a shared MemoryBlock requires Cross-Origin Isolation."
+              functionName: "Block constructor",
+              message: "Creating a shared Block requires Cross-Origin Isolation."
             });
           }
           this.#arrayBuffer = new SharedArrayBuffer(args.byteLength);
@@ -88,7 +88,7 @@ export class MemoryBlock {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryBlock constructor",
+          functionName: "Block constructor",
           cause: e,
         });
       }
@@ -102,7 +102,7 @@ export class MemoryBlock {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "get MemoryBlock.byteLength",
+          functionName: "get Block.byteLength",
           cause: e,
         });
       }
@@ -116,7 +116,7 @@ export class MemoryBlock {
         return true;
       } else {
         throw new ErrorHandling.AnticipatedError({
-          functionName: "get MemoryBlock.shareable",
+          functionName: "get Block.shareable",
           message: "this.#arrayBuffer must be of type ArrayBuffer or SharedArrayBuffer.",
         });
       }
@@ -125,7 +125,7 @@ export class MemoryBlock {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "get MemoryBlock.shareable",
+          functionName: "get Block.shareable",
           cause: e,
         });
       }
@@ -139,7 +139,7 @@ export class MemoryBlock {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryBlock.toArrayBuffer",
+          functionName: "Block.toArrayBuffer",
           cause: e,
         });
       }
@@ -147,26 +147,26 @@ export class MemoryBlock {
   }
 };
 
-export class MemoryView {
+export class View {
   #arrayBuffer;
   #byteOffset;
   #byteLength;
   constructor(args) {
     try {
-      if (args instanceof MemoryBlock) {
+      if (args instanceof Block) {
         this.#arrayBuffer = args.memoryBlock.toArrayBuffer();
         this.#byteOffset = args.byteOffset;
         this.#byteLength = args.length;
         return;
       } else if (!(ErrorHandling.isBareObject(args))) {
         throw new ErrorHandling.AnticipatedError({
-          functionName: "MemoryView constructor",
+          functionName: "View constructor",
           message: "Invalid Arguments",
         });
       }
       if (!(Object.hasOwn(args, "memoryBlock"))) {
         throw new ErrorHandling.AnticipatedError({
-          functionName: "MemoryView constructor",
+          functionName: "View constructor",
           message: "Argument \"memoryBlock\" is required.",
         });
       }
@@ -174,25 +174,25 @@ export class MemoryView {
       if (Object.hasOwn(args, "byteOffset")) {
         if (typeof args.byteOffset !== "number") {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView constructor",
+            functionName: "View constructor",
             message: "Argument \"byteOffset\" must be a number.",
           });
         }
         if (!(Number.isInteger(args.byteOffset))) {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView constructor",
+            functionName: "View constructor",
             message: "Argument \"byteOffset\" must be an integer.",
           });
         }
         if (args.byteOffset < 0) {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView constructor",
+            functionName: "View constructor",
             message: "Argument \"byteOffset\" must be non-negative.",
           });
         }
         if (args.byteOffset >= this.#arrayBuffer.byteLength) {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView constructor",
+            functionName: "View constructor",
             message: "Argument \"byteOffset\" must not exceed length of the block.",
           });
         }
@@ -203,19 +203,19 @@ export class MemoryView {
       if (Object.hasOwn(args, "byteLength")) {
         if (typeof args.byteLength !== "number") {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView constructor",
+            functionName: "View constructor",
             message: "Argument \"byteLength\" must be a number.",
           });
         }
         if (!(Number.isInteger(args.byteLength))) {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView constructor",
+            functionName: "View constructor",
             message: "Argument \"byteLength\" must be an integer.",
           });
         }
         if (args.byteLength < 0) {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView constructor",
+            functionName: "View constructor",
             message: "Argument \"byteLength\" must be non-negative.",
           });
         }
@@ -228,7 +228,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView constructor",
+          functionName: "View constructor",
           cause: e,
         });
       }
@@ -242,7 +242,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "get MemoryView.byteLength",
+          functionName: "get View.byteLength",
           cause: e,
         });
       }
@@ -256,7 +256,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "get MemoryView.shareable",
+          functionName: "get View.shareable",
           cause: e,
         });
       }
@@ -265,14 +265,14 @@ export class MemoryView {
   createSlice(args) {
     try {
       if (args === undefined) {
-        return new MemoryView({
+        return new View({
           arrayBuffer: this.#arrayBuffer,
           byteOffset: this.#byteOffset,
           byteLength: this.#byteLength,
         });
       } else if (!(ErrorHandling.isBareObject(args))) {
         throw new ErrorHandling.AnticipatedError({
-          functionName: "MemoryView.createSlice",
+          functionName: "View.createSlice",
           message: "Invalid Arguments",
         });
       }
@@ -280,25 +280,25 @@ export class MemoryView {
       if (Object.hasOwn(args, "byteOffset")) {
         if (typeof args.byteOffset !== "number") {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView.createSlice",
+            functionName: "View.createSlice",
             message: "Argument \"byteOffset\" must be a number.",
           });
         }
         if (!(Number.isInteger(args.byteOffset))) {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView.createSlice",
+            functionName: "View.createSlice",
             message: "Argument \"byteOffset\" must be an integer.",
           });
         }
         if (args.byteOffset < 0) {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView.createSlice",
+            functionName: "View.createSlice",
             message: "Argument \"byteOffset\" must be non-negative.",
           });
         }
         if (args.byteOffset >= this.#arrayBuffer.byteLength) {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView.createSlice",
+            functionName: "View.createSlice",
             message: "Argument \"byteOffset\" must not exceed length of the block.",
           });
         }
@@ -310,19 +310,19 @@ export class MemoryView {
       if (Object.hasOwn(args, "byteLength")) {
         if (typeof args.byteLength !== "number") {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView.createSlice",
+            functionName: "View.createSlice",
             message: "Argument \"byteLength\" must be a number.",
           });
         }
         if (!(Number.isInteger(args.byteLength))) {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView.createSlice",
+            functionName: "View.createSlice",
             message: "Argument \"byteLength\" must be an integer.",
           });
         }
         if (args.byteLength < 0) {
           throw new ErrorHandling.AnticipatedError({
-            functionName: "MemoryView.createSlice",
+            functionName: "View.createSlice",
             message: "Argument \"byteLength\" must be non-negative.",
           });
         }
@@ -330,8 +330,8 @@ export class MemoryView {
       } else {
         byteLength = this.byteLength - byteOffset;
       }
-      return new MemoryView({
-        memoryBlock: new MemoryBlock(this.#arrayBuffer),
+      return new View({
+        memoryBlock: new Block(this.#arrayBuffer),
         byteOffset: this.#byteOffset + byteOffset,
         byteLength: byteLength,
       });
@@ -340,7 +340,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.createSlice",
+          functionName: "View.createSlice",
           cause: e,
         });
       }
@@ -350,25 +350,25 @@ export class MemoryView {
     try {
       if (!(ErrorHandling.isBareObject(args))) {
         throw new ErrorHandling.AnticipatedError({
-          functionName: "MemoryView.set",
+          functionName: "View.set",
           message: "Invalid Arguments",
         });
       }
       if (Object.hasOwn(args, "from")) {
         throw new ErrorHandling.AnticipatedError({
-          functionName: "MemoryView.set",
+          functionName: "View.set",
           message: "Argument \"from\" is required.",
         });
       }
-      if (args.from instanceof MemoryView) {
+      if (args.from instanceof View) {
         throw new ErrorHandling.AnticipatedError({
-          functionName: "MemoryView.set",
-          message: "Argument \"from\" must be of class MemoryView.",
+          functionName: "View.set",
+          message: "Argument \"from\" must be of class View.",
         });
       }
       if (args.from.byteLength !== this.#byteLength) {
         throw new ErrorHandling.AnticipatedError({
-          functionName: "MemoryView.set",
+          functionName: "View.set",
           message: "byteLength must be equal.",
         });
       }
@@ -381,7 +381,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.set",
+          functionName: "View.set",
           cause: e,
         });
       }
@@ -395,7 +395,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.toInt8Array",
+          functionName: "View.toInt8Array",
           cause: e,
         });
       }
@@ -409,7 +409,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.toUint8Array",
+          functionName: "View.toUint8Array",
           cause: e,
         });
       }
@@ -423,7 +423,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.toUint8ClampedArray",
+          functionName: "View.toUint8ClampedArray",
           cause: e,
         });
       }
@@ -437,7 +437,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.toInt16Array",
+          functionName: "View.toInt16Array",
           cause: e,
         });
       }
@@ -451,7 +451,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.toUint16Array",
+          functionName: "View.toUint16Array",
           cause: e,
         });
       }
@@ -465,7 +465,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.toInt32Array",
+          functionName: "View.toInt32Array",
           cause: e,
         });
       }
@@ -479,7 +479,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.toUint32Array",
+          functionName: "View.toUint32Array",
           cause: e,
         });
       }
@@ -493,7 +493,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.toFloat32Array",
+          functionName: "View.toFloat32Array",
           cause: e,
         });
       }
@@ -507,7 +507,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.toFloat64Array",
+          functionName: "View.toFloat64Array",
           cause: e,
         });
       }
@@ -521,7 +521,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.toBigInt64Array",
+          functionName: "View.toBigInt64Array",
           cause: e,
         });
       }
@@ -535,7 +535,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.toBigUint64Array",
+          functionName: "View.toBigUint64Array",
           cause: e,
         });
       }
@@ -549,7 +549,7 @@ export class MemoryView {
         throw e;
       } else {
         throw new ErrorHandling.UnanticipatedError({
-          functionName: "MemoryView.toDataView",
+          functionName: "View.toDataView",
           cause: e,
         });
       }
@@ -558,25 +558,25 @@ export class MemoryView {
 }
 
 export function createCopy(args) {
-  const newMemoryBlock = new MemoryBlock({
+  const newBlock = new Block({
     byteLength: args.memoryView.byteLength,
   });
-  const newView = new MemoryView(newMemoryBlock);
+  const newView = new View(newBlock);
   newView.set(args.memoryView);
-  return newMemoryBlock;
+  return newBlock;
 }
 
 export function createSlicedCopy(args) {
-  const newMemoryBlock = new MemoryBlock({
+  const newBlock = new Block({
     byteLength: args.end - args.start,
   });
   const slicedView = args.memoryView.createSlicedCopy({
     start: args.start,
     end: args.end,
   });
-  const newView = new MemoryView(newMemoryBlock);
+  const newView = new View(newBlock);
   newView.set(args.memoryView);
-  return newMemoryBlock;
+  return newBlock;
 }
 
 export class DataArray {
@@ -881,14 +881,14 @@ export class DataArray {
 
 export class Uint8 {
   #view;
-  static get BYTES_PER_ELEMENT() {
+  static get BYTE_LENGTH() {
     return 1;
   }
   constructor (args) {
     try {
-      let thisMemoryView;
-      if (args instanceof MemoryView) {
-        thisMemoryView = args;
+      let thisView;
+      if (args instanceof View) {
+        thisView = args;
       } else if (ErrorHandling.isBareObject(args)) {
         if (!(args.hasOwnProperty("memoryView"))) {
           throw new ErrorHandling.AnticipatedError({
@@ -896,20 +896,20 @@ export class Uint8 {
             message: "Argument \"memoryView\" is required.",
           });
         }
-        thisMemoryView = args.memoryView;
+        thisView = args.memoryView;
       } else {
         throw new ErrorHandling.AnticipatedError({
           functionName: "Uint8 constructor",
           message: "Invalid Arguments",
         });
       }
-      if (thisMemoryView.byteLength !== this.BYTES_PER_ELEMENT) {
+      if (thisView.byteLength !== this.BYTES_PER_ELEMENT) {
         throw new ErrorHandling.AnticipatedError({
           functionName: "Uint8 constructor",
           message: "memoryView length is invalid.",
         });
       }
-      this.#view = thisMemoryView.toUint8Array();
+      this.#view = thisView.toUint8Array();
     } catch (e) {
       if (e instanceof ErrorHandling.AnticipatedError) {
         throw e;
