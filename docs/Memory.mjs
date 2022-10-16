@@ -876,74 +876,6 @@ export class DataArray {
       }
     }
   }
-  equals(args) {
-    try {
-      if (!("valueOf" in this.#ElementClass.prototype)) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.equals",
-          message: "Element class does not support valueOf.",
-        });
-      }
-      let other;
-      if (args instanceof DataArray) {
-        other = args;
-      } else if (ErrorHandling.isBareObject(args)) {
-        if (!(args.hasOwnProperty("dataArray"))) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "DataArray.equals",
-            message: "Argument \"dataArray\" is required.",
-          });
-        }
-        if (!(args.dataArray instanceof DataArray)) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "DataArray.equals",
-            message: "Argument \"dataArray\" must be an instance of DataArray.",
-          });
-        }
-        other = args.dataArray;
-      } else {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.equals",
-          message: "Invalid Arguments.",
-        });
-      }
-      if (!("valueOf" in other.ElementClass.prototype)) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.equals",
-          message: "dataArray's Element class does not support valueOf.",
-        });
-      }
-      const thisIter = this[Symbol.iterator]();
-      const otherIter = other[Symbol.iterator]();
-      let thisResult = thisIter.next();
-      let otherResult = otherIter.next();
-      while (!(thisResult.done) && !(otherResult.done)) {
-        const thisResultValue = thisResult.value.valueOf();
-        const otherResultValue = otherResult.value.valueOf();
-        if (!("equals" in thisResultValue)) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "DataArray.equals",
-            message: "No equals function provided on element.",
-          });
-        }
-        if (!(thisResultValue.equals(otherResultValue))) {
-          return false;
-        }
-        thisResult = thisIter.next();
-        otherResult = otherIter.next();
-      }
-      return true;
-    } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "DataArray.equals",
-          cause: e,
-        });
-      }
-    }
-  }
 }
 
 export class Uint8 {
@@ -1040,32 +972,6 @@ export class Uint8 {
       } else {
         throw new ErrorHandling.UnanticipatedError({
           functionName: "Uint8.valueOf",
-          cause: e,
-        });
-      }
-    }
-  }
-  equals(args) {
-    try {
-      let value;
-      if (ErrorHandling.isBareObject(args)) {
-        if (!(args.hasOwnProperty("value"))) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "Uint8.equals",
-            message: "Argument \"value\" is required.",
-          });
-        }
-        value = args.value;
-      } else {
-        value = args;
-      }
-      return (this.valueOf() === value.valueOf());
-    } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "Uint8.equals",
           cause: e,
         });
       }
