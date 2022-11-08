@@ -5,40 +5,59 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 const initPageTime = performance.now();
 
-/*
-const loadStreamsModule = import("https://scotwatson.github.io/Streams/Streams.mjs");
-
-loadStreamsModule.then(function (module) {
-  console.log(Object.getOwnPropertyNames(module));
-}, streamFail);
-
-function streamFail(e) {
-  console.error("Stream Fail")
-  console.error(e)
-}
-*/
-const loadWindow = new Promise(function (resolve, reject) {
+const asyncWindow = new Promise(function (resolve, reject) {
   window.addEventListener("load", function (evt) {
     resolve(evt);
   });
 });
 
-Promise.all( [ loadWindow ] ).then(start, fail);
+const asyncErrorLog = (async function () {
+  try {
+    return await import("https://scotwatson.github.io/Debug/20221107/ErrorLog.mjs");
+  } catch (e) {
+    console.error(e);
+  }
+})();
 
-function start() {
-  const buffer = new ArrayBuffer(1000);
+const asyncMemory = (async function () {
+  try {
+    return await import("https://scotwatson.github.io/Memory/20221107/Memory.mjs");
+  } catch (e) {
+    console.error(e);
+  }
+})();
 
-  const view = new Uint8Array(buffer);
+(async function () {
+  try {
+    const modules = await Promise.all( [ asyncWindow, asyncErrorLog, asyncMemory ] );
+    start(modules);
+  } catch (e) {
+    console.error(e);
+  }
+})();
 
-  const array = (function () {
-    let array = new Array(buffer.byteLength);
-    for (let i = 0; i < buffer.byteLength; ++i) {
-      array[i] = new Uint8Array(buffer, i, 1);
-    }
-    return array;
-  })();
-  test1();
-  test2();
+async function start(evtWindow, ErrorLog, Memory) {
+  try {
+    const buffer = new Memory.Block({
+      byteLength: 1000,
+    });
+    const view = new Memory.View(buffer);
+
+    const array = (function () {
+      let array = new Array(buffer.byteLength);
+      for (let i = 0; i < buffer.byteLength; ++i) {
+        array[i] = new Uint8Array(buffer, i, 1);
+      }
+      return array;
+    })();
+    test1();
+    test2();
+  } catch (e) {
+    ErrorLog.rethrow({
+      functionName: "start",
+      error: e,
+    });
+  }
 
   function test1() {
     const start = performance.now();
@@ -61,9 +80,4 @@ function start() {
     const end = performance.now();
     console.log("test2 time: ", (end - start));
   }
-}
-
-function fail(e) {
-  console.error("loadFail");
-  console.error(e);
 }
