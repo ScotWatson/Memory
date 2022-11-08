@@ -3,7 +3,8 @@
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-import * as ErrorHandling from "https://scotwatson.github.io/ErrorHandling/ErrorHandling.mjs";
+import * as ErrorLog from "https://scotwatson.github.io/Debug/20221107/ErrorLog.mjs";
+import * as Types from "https://scotwatson.github.io/Debug/20221107/Types.mjs";
 
 export class Block {
   #arrayBuffer;
@@ -15,21 +16,13 @@ export class Block {
       } else if (args instanceof SharedArrayBuffer) {
         this.#arrayBuffer = args;
         return;
-      } else if (!(ErrorHandling.isBareObject(args))) {
-        throw new ErrorHandling.InvalidInputError({
-          functionName: "Block constructor",
-          argumentName: "",
-          message: "requires a bare object, ArrayBuffer, or SharedArrayBuffer.",
-        });
+      } else if (!(Types.isSimpleObject(args))) {
+        throw "Argument must be a simple object, ArrayBuffer, or SharedArrayBuffer.";
       }
       let argsShared = false;
       if (Object.hasOwn(args, "shared")) {
         if (typeof args.shared !== "boolean") {
-          throw new ErrorHandling.InvalidInputError({
-            functionName: "Block constructor",
-            argumentName: "shared",
-            message: "requires a boolean.",
-          });
+          throw "Argument \"shared\" requires a boolean.";
         }
         argsShared = args.shared;
       }
@@ -40,42 +33,26 @@ export class Block {
         } else if (args.arrayBuffer instanceof SharedArrayBuffer) {
           shared = true;
         } else {
-          throw new ErrorHandling.InvalidInputError({
-            functionName: "Block constructor",
-            argumentName: "arrayBuffer",
-            message: "requires ArrayBuffer or SharedArrayBuffer.",
-          });
+          throw "Argument \"arrayBuffer\" requires ArrayBuffer or SharedArrayBuffer.";
         }
         if (Object.hasOwn(args, "shared")) {
           if (shared !== args.shared) {
-            throw new ErrorHandling.AnticipatedError({
-              functionName: "Block constructor",
-              message: "Argument \"shared\" does not match the class of argument \"arrayBuffer\".",
-            });
+            throw "Argument \"shared\" does not match the class of argument \"arrayBuffer\".";
           }
         }
         this.#arrayBuffer = args.arrayBuffer;
         if (Object.hasOwn(args, "byteLength")) {
           if (this.#arrayBuffer !== args.byteLength) {
-            throw new ErrorHandling.AnticipatedError({
-              functionName: "Block constructor",
-              message: "Argument \"byteLength\" does not match the length of argument \"arrayBuffer\".",
-            });
+            throw "Argument \"byteLength\" does not match the length of argument \"arrayBuffer\".";
           }
         }
       } else {
         if (!(Object.hasOwn(args, "byteLength"))) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "Block constructor",
-            message: "Argument \"byteLength\" of Block constructor is required."
-          });
+          throw "Argument \"byteLength\" of Block constructor is required.";
         }
         if (argsShared) {
           if (!(self.crossOriginIsolated)) {
-            throw new ErrorHandling.AnticipatedError({
-              functionName: "Block constructor",
-              message: "Creating a shared Block requires Cross-Origin Isolation."
-            });
+            throw "Creating a shared Block requires Cross-Origin Isolation.";
           }
           this.#arrayBuffer = new SharedArrayBuffer(args.byteLength);
         } else {
@@ -84,28 +61,20 @@ export class Block {
       }
       return;
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "Block constructor",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "Block constructor",
+        error: e,
+      });
     }
   }
   get byteLength() {
     try {
       return this.#arrayBuffer.byteLength;
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "get Block.byteLength",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "get Block.byteLength",
+        error: e,
+      });
     }
   }
   get shareable() {
@@ -115,34 +84,23 @@ export class Block {
       } else if (this.#arrayBuffer instanceof SharedArrayBuffer) {
         return true;
       } else {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "get Block.shareable",
-          message: "this.#arrayBuffer must be of type ArrayBuffer or SharedArrayBuffer.",
-        });
+        throw "Internal Logic Error: Internal buffer must be of type ArrayBuffer or SharedArrayBuffer.";
       }
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "get Block.shareable",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "get Block.sharable",
+        error: e,
+      });
     }
   }
   toArrayBuffer() {
     try {
       return this.#arrayBuffer;
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "Block.toArrayBuffer",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "Block.toSharedBuffer",
+        error: e,
+      });
     }
   }
 };
@@ -158,108 +116,63 @@ export class View {
         this.#byteOffset = args.byteOffset;
         this.#byteLength = args.length;
         return;
-      } else if (!(ErrorHandling.isBareObject(args))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "View constructor",
-          message: "Invalid Arguments",
-        });
+      } else if (!(Types.isSimpleObject(args))) {
+        throw "Argument must be a simple object.";
       }
       if (!(Object.hasOwn(args, "memoryBlock"))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "View constructor",
-          message: "Argument \"memoryBlock\" is required.",
-        });
+        throw "Argument \"memoryBlock\" is required.";
       }
       this.#arrayBuffer = args.memoryBlock.toArrayBuffer();
       if (Object.hasOwn(args, "byteOffset")) {
-        if (typeof args.byteOffset !== "number") {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View constructor",
-            message: "Argument \"byteOffset\" must be a number.",
-          });
-        }
-        if (!(Number.isInteger(args.byteOffset))) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View constructor",
-            message: "Argument \"byteOffset\" must be an integer.",
-          });
+        if (!(Types.isInteger(args.byteOffset))) {
+          throw "Argument \"byteOffset\" must be an integer.";
         }
         if (args.byteOffset < 0) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View constructor",
-            message: "Argument \"byteOffset\" must be non-negative.",
-          });
+          throw "Argument \"byteOffset\" must be non-negative.";
         }
         if (args.byteOffset >= this.#arrayBuffer.byteLength) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View constructor",
-            message: "Argument \"byteOffset\" must not exceed length of the block.",
-          });
+          throw "Argument \"byteOffset\" must not exceed length of the block.";
         }
         this.#byteOffset = args.byteOffset;
       } else {
         this.#byteOffset = 0;
       }
       if (Object.hasOwn(args, "byteLength")) {
-        if (typeof args.byteLength !== "number") {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View constructor",
-            message: "Argument \"byteLength\" must be a number.",
-          });
-        }
-        if (!(Number.isInteger(args.byteLength))) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View constructor",
-            message: "Argument \"byteLength\" must be an integer.",
-          });
+        if (!(Types.isInteger(args.byteLength))) {
+          throw "Argument \"byteLength\" must be an integer.";
         }
         if (args.byteLength < 0) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View constructor",
-            message: "Argument \"byteLength\" must be non-negative.",
-          });
+          throw "Argument \"byteLength\" must be non-negative.";
         }
         this.#byteLength = args.byteLength;
       } else {
         this.#byteLength = this.#arrayBuffer.byteLength - this.#byteOffset;
       }
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View constructor",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View constructor",
+        error: e,
+      });
     }
   }
   get byteLength() {
     try {
       return this.#byteLength;
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "get View.byteLength",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "get View.byteLength",
+        error: e,
+      });
     }
   }
   get shareable() {
     try {
       return (this.#arrayBuffer instanceof self.SharedArrayBuffer);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "get View.shareable",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "get View.shareable",
+        error: e,
+      });
     }
   }
   createSlice(args) {
@@ -270,37 +183,19 @@ export class View {
           byteOffset: this.#byteOffset,
           byteLength: this.#byteLength,
         });
-      } else if (!(ErrorHandling.isBareObject(args))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "View.createSlice",
-          message: "Invalid Arguments",
-        });
+      } else if (!(Types.isSimpleObject(args))) {
+        throw "Arguments must be a simple object.";
       }
       let byteOffset;
       if (Object.hasOwn(args, "byteOffset")) {
-        if (typeof args.byteOffset !== "number") {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View.createSlice",
-            message: "Argument \"byteOffset\" must be a number.",
-          });
-        }
-        if (!(Number.isInteger(args.byteOffset))) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View.createSlice",
-            message: "Argument \"byteOffset\" must be an integer.",
-          });
+        if (!(Types.isInteger(args.byteOffset))) {
+          throw "Argument \"byteOffset\" must be an integer.";
         }
         if (args.byteOffset < 0) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View.createSlice",
-            message: "Argument \"byteOffset\" must be non-negative.",
-          });
+          throw "Argument \"byteOffset\" must be non-negative.";
         }
         if (args.byteOffset >= this.#arrayBuffer.byteLength) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View.createSlice",
-            message: "Argument \"byteOffset\" must not exceed length of the block.",
-          });
+          throw "Argument \"byteOffset\" must not exceed length of the block.";
         }
         byteOffset = args.byteOffset;
       } else {
@@ -308,23 +203,11 @@ export class View {
       }
       let byteLength;
       if (Object.hasOwn(args, "byteLength")) {
-        if (typeof args.byteLength !== "number") {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View.createSlice",
-            message: "Argument \"byteLength\" must be a number.",
-          });
-        }
-        if (!(Number.isInteger(args.byteLength))) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View.createSlice",
-            message: "Argument \"byteLength\" must be an integer.",
-          });
+        if (!(Types.isInteger(args.byteLength))) {
+          throw "Argument \"byteLength\" must be an integer.";
         }
         if (args.byteLength < 0) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "View.createSlice",
-            message: "Argument \"byteLength\" must be non-negative.",
-          });
+          throw "Argument \"byteLength\" must be non-negative.";
         }
         byteLength = args.byteLength;
       } else {
@@ -336,223 +219,155 @@ export class View {
         byteLength: byteLength,
       });
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.createSlice",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "get View.createSlice",
+        error: e,
+      });
     }
   }
   set(args) {
     try {
-      if (!(ErrorHandling.isBareObject(args))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "View.set",
-          message: "Invalid Arguments",
-        });
+      if (!(Types.isSimpleObject(args))) {
+        throw "Arguments must be a simple object.";
       }
       if (Object.hasOwn(args, "from")) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "View.set",
-          message: "Argument \"from\" is required.",
-        });
+        throw "Argument \"from\" is required.";
       }
       if (args.from instanceof View) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "View.set",
-          message: "Argument \"from\" must be of class View.",
-        });
+        throw "Argument \"from\" must be of class View.";
       }
       if (args.from.byteLength !== this.#byteLength) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "View.set",
-          message: "byteLength must be equal.",
-        });
+        throw "byteLength must be equal.";
       }
       // Uint8Array is used here to allow the bytes to be copied, it does not mean the bytes represent unsigned integers
       const thisView = new Uint8Array(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
       const fromView = new Uint8Array(args.from.#arrayBuffer, args.from.#byteOffset, args.from.#byteLength);
       thisView.set(fromView);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.set",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View.set",
+        error: e,
+      });
     }
   }
   toInt8Array () {
     try {
       return new Int8Array(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.toInt8Array",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View.toInt8Array",
+        error: e,
+      });
     }
   }
   toUint8Array () {
     try {
       return new Uint8Array(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.toUint8Array",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View.toUint8Array",
+        error: e,
+      });
     }
   }
   toUint8ClampedArray () {
     try {
       return new Uint8ClampedArray(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.toUint8ClampedArray",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View.toUint8ClampedArray",
+        error: e,
+      });
     }
   }
   toInt16Array () {
     try {
       return new Int16Array(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.toInt16Array",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View.toInt16Array",
+        error: e,
+      });
     }
   }
   toUint16Array () {
     try {
       return new Uint16Array(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.toUint16Array",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View.toUint16Array",
+        error: e,
+      });
     }
   }
   toInt32Array () {
     try {
       return new Int32Array(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.toInt32Array",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View.toInt32Array",
+        error: e,
+      });
     }
   }
   toUint32Array () {
     try {
       return new Uint32Array(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.toUint32Array",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View.toUint32Array",
+        error: e,
+      });
     }
   }
   toFloat32Array () {
     try {
       return new Float32Array(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.toFloat32Array",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View.toFloat32Array",
+        error: e,
+      });
     }
   }
   toFloat64Array () {
     try {
       return new Float64Array(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.toFloat64Array",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View.toFloat64Array",
+        error: e,
+      });
     }
   }
   toBigInt64Array () {
     try {
       return new BigInt64Array(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.toBigInt64Array",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View.toBigInt64Array",
+        error: e,
+      });
     }
   }
   toBigUint64Array () {
     try {
       return new BigUint64Array(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.toBigUint64Array",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View.toBigUint64Array",
+        error: e,
+      });
     }
   }
   toDataView() {
     try {
       return new DataView(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "View.toDataView",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "View.toDataView",
+        error: e,
+      });
     }
   }
 }
@@ -585,92 +400,61 @@ export class DataArray {
   #length;
   constructor(args) {
     try {
-      if (!(ErrorHandling.isBareObject(args))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray constructor",
-          message: "Invalid Arguments",
-        });
+      if (!(Types.isSimpleObject(args))) {
+        throw "Arguments must be a simple object.";
       }
       if (Object.hasOwn(args, "memoryView")) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray constructor",
-          message: "Argument \"memoryView\" is required.",
-        });
+        throw "Argument \"memoryView\" is required.";
       }
       this.#memoryView = args.memoryView;
       if (Object.hasOwn(args, "ElementClass")) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray constructor",
-          message: "Argument \"ElementClass\" is required.",
-        });
+        throw "Argument \"ElementClass\" is required.";
       }
       this.#ElementClass = args.ElementClass;
       this.#length = this.#memoryView.byteLength / this.#ElementClass.BYTE_LENGTH;
-      if (!(Number.isInteger(this.#length))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray constructor",
-          message: "memoryView.byteLength is not a multiple of ElementClass.BYTE_LENGTH.",
-        });
+      if (!(Types.isInteger(this.#length))) {
+        throw "memoryView.byteLength is not a multiple of ElementClass.BYTE_LENGTH.";
       }
       if (Object.hasOwn(args, "length")) {
         if (length !== args.length) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "DataArray constructor",
-            message: "Invalid Length",
-          });
+          throw "Invalid Length";
         }
       }
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "DataArray constructor",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "DataArray constructor",
+        error: e,
+      });
     }
   }
   get ElementClass() {
     try {
       return this.#ElementClass;
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "get DataArray.ElementClass",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "get DataArray.ElementClass",
+        error: e,
+      });
     }
   }
   get BYTES_PER_ELEMENT() {
     try {
       return this.#ElementClass.BYTES_PER_ELEMENT;
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "get DataArray.BYTES_PER_ELEMENT",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "get DataArray.BYTES_PER_ELEMENT",
+        error: e,
+      });
     }
   }
   get length() {
     try {
       return this.#length;
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "get DataArray.length",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "get DataArray.length",
+        error: e,
+      });
     }
   }
   get [Symbol.iterator]() {
@@ -681,14 +465,10 @@ export class DataArray {
         }
       });
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "get DataArray[Symbol.iterator]",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "get DataArray[Symbol.iterator]",
+        error: e,
+      });
     }
   }
   at(args) {
@@ -696,19 +476,13 @@ export class DataArray {
       let index;
       if (typeof args === "number") {
         index = args;
-      } else if (isBareObject(args)) {
+      } else if (Types.isSimpleObject(args)) {
         if (!(args.hasOwnProperty("index"))) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "DataArray.at",
-            message: "Argument \"index\" is required.",
-          });
+          throw "Argument \"index\" is required.";
         }
         index = args.index;
       } else {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.at",
-          message: "Invalid Argument",
-        });
+        throw "Invalid Argument";
       }
       const byteOffset = this.#ElementClass.BYTES_PER_ELEMENT * index;
       const slice = this.#memoryView.createSlice({
@@ -717,77 +491,34 @@ export class DataArray {
       });
       return new this.#ElementClass(slice);
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "DataArray.at",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "DataArray.at",
+        error: e,
+      });
     }
   }
   copyWithin(args) {
     try {
-      if (!(ErrorHandling.isBareObject(args))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray constructor",
-          message: "Invalid Arguments",
-        });
+      if (!(Types.isSimpleObject(args))) {
+        throw "Arguments must be a simple object.";
       }
-      if (!(args.hasOwnProperty("toIndex"))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.copyWithin",
-          message: "Argument \"toIndex\" is required.",
-        });
+      if (!(Object.hasOwn(args, "toIndex"))) {
+        throw "Argument \"toIndex\" is required.";
       }
-      if (!(typeof args.toIndex === "number")) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.copyWithin",
-          message: "Argument \"toIndex\" must be a number.",
-        });
+      if (!(Types.isInteger(args.toIndex))) {
+        throw "Argument \"toIndex\" must be an integer.";
       }
-      if (!(Number.isInteger(args.toIndex))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.copyWithin",
-          message: "Argument \"toIndex\" must be an integer.",
-        });
+      if (!(Object.hasOwn(args, "fromIndex"))) {
+        throw "Argument \"fromIndex\" is required.";
       }
-      if (!(args.hasOwnProperty("fromIndex"))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.copyWithin",
-          message: "fromIndex is required.",
-        });
+      if (!(Types.isInteger(args.fromIndex))) {
+        throw "Argument \"fromIndex\" must be an integer.";
       }
-      if (!(typeof args.fromIndex === "number")) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.copyWithin",
-          message: "Argument \"fromIndex\" must be a number.",
-        });
+      if (!(Object.hasOwnProperty(args, "length"))) {
+        throw "Argument \"length\" is required.";
       }
-      if (!(Number.isInteger(args.fromIndex))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.copyWithin",
-          message: "Argument \"fromIndex\" must be an integer.",
-        });
-      }
-      if (!(args.hasOwnProperty("length"))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.copyWithin",
-          message: "length is required.",
-        });
-      }
-      if (!(typeof args.length === "number")) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.copyWithin",
-          message: "Argument \"length\" must be a number.",
-        });
-      }
-      if (!(Number.isInteger(args.length))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.copyWithin",
-          message: "Argument \"length\" must be an integer.",
-        });
+      if (!(Types.isInteger(args.length))) {
+        throw "Argument \"length\" must be an integer.";
       }
       const byteLength = args.length * this.#ElementClass.BYTES_PER_ELEMENT;
       const fromSlice = this.#memoryView.createSlice({
@@ -801,79 +532,41 @@ export class DataArray {
       toSlice.set(fromSlice);
       return;
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "DataArray.copyWithin",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "DataArray.copyWithin",
+        error: e,
+      });
     }
   }
   fill(args) {
     try {
-      if (!(ErrorHandling.isBareObject(args))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray constructor",
-          message: "Invalid Arguments",
-        });
+      if (!(Types.isSimpleObject(args))) {
+        throw "Arguments must be a simple object.";
       }
-      if (!(args.hasOwnProperty("value"))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.fill",
-          message: "value is required.",
-        });
+      if (!(Object.hasOwn(args, "value"))) {
+        throw "Argument \"value\" is required.";
       }
-      if (!(args.hasOwnProperty("startIndex"))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.fill",
-          message: "startIndex is required.",
-        });
+      if (!(Object.hasOwn(args, "startIndex"))) {
+        throw "Argument \"startIndex\" is required.";
       }
-      if (!(typeof args.startIndex === "number")) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.fill",
-          message: "Argument \"startIndex\" must be a number.",
-        });
+      if (!(Types.isInteger(args.startIndex))) {
+        throw "Argument \"startIndex\" must be an integer.";
       }
-      if (!(Number.isInteger(args.startIndex))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.fill",
-          message: "Argument \"startIndex\" must be an integer.",
-        });
+      if (!(Object.hasOwn(args, "endIndex"))) {
+        throw "Argument \"endIndex\" is required.";
       }
-      if (!(args.hasOwnProperty("endIndex"))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.fill",
-          message: "endIndex is required.",
-        });
-      }
-      if (!(typeof args.endIndex === "number")) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.fill",
-          message: "Argument \"endIndex\" must be a number.",
-        });
-      }
-      if (!(Number.isInteger(args.endIndex))) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "DataArray.fill",
-          message: "Argument \"endIndex\" must be an integer.",
-        });
+      if (!(Types.isInteger(args.endIndex))) {
+        throw "Argument \"endIndex\" must be an integer.";
       }
       for (let i = args.startIndex; i < args.endIndex; ++i) {
         this.at(i).set(args.value);
       }
       return;
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "DataArray.fill",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "DataArray.fill",
+        error: e,
+      });
     }
   }
 }
@@ -888,36 +581,23 @@ export class Uint8 {
       let thisView;
       if (args instanceof View) {
         thisView = args;
-      } else if (ErrorHandling.isBareObject(args)) {
-        if (!(args.hasOwnProperty("memoryView"))) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "Uint8 constructor",
-            message: "Argument \"memoryView\" is required.",
-          });
+      } else if (Types.isSimpleObject(args)) {
+        if (!(Object.hasOwn(args, "memoryView"))) {
+          throw "Argument \"memoryView\" is required.";
         }
         thisView = args.memoryView;
       } else {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "Uint8 constructor",
-          message: "Invalid Arguments",
-        });
+        throw "Invalid Arguments";
       }
       if (thisView.byteLength !== this.BYTE_LENGTH) {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "Uint8 constructor",
-          message: "memoryView length is invalid.",
-        });
+        throw "memoryView length is invalid.";
       }
       this.#view = thisView.toUint8Array();
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "Uint8 constructor",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "Uint8 constructor",
+        error: e,
+      });
     }
   }
   set(args) {
@@ -925,70 +605,33 @@ export class Uint8 {
       if (typeof args === "number") {
         this.#view[0] = args;
         return;
-      } else if (ErrorHandling.isBareObject(args)) {
-        if (!(args.hasOwnProperty("value"))) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "Uint8.set",
-            message: "Argument \"value\" is required.",
-          });
+      } else if (Types.isSimpleObject(args)) {
+        if (!(Object.hasOwn(args, "value"))) {
+          throw "Argument \"value\" is required.";
         }
-        if (typeof args.value !== "number") {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "Uint8.set",
-            message: "Argument \"value\" must be a number.",
-          });
-        }
-        if (!(Number.isInteger(args.value))) {
-          throw new ErrorHandling.AnticipatedError({
-            functionName: "Uint8.set",
-            message: "Argument \"value\" must be an integer.",
-          });
+        if (!(Types.isInteger(args.value))) {
+          throw "Argument \"value\" must be an integer.";
         }
         this.#view[0] = args.value;
         return;
       } else {
-        throw new ErrorHandling.AnticipatedError({
-          functionName: "Uint8.set",
-          message: "Invalid Arguments",
-        });
+        throw "Invalid Arguments";
       }
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "Uint8.set",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "Uint8.set",
+        error: e,
+      });
     }
   }
   valueOf() {
     try {
       return this.#view[0];
     } catch (e) {
-      if (e instanceof ErrorHandling.AnticipatedError) {
-        throw e;
-      } else {
-        throw new ErrorHandling.UnanticipatedError({
-          functionName: "Uint8.valueOf",
-          cause: e,
-        });
-      }
+      ErrorLog.rethrow({
+        functionName: "Uint8.valueOf",
+        error: e,
+      });
     }
   }
 }
-
-/*
-Int8
-Uint8
-Uint8Clamped
-Int16
-Uint16
-Int32
-Uint32
-Float32
-Float64
-BigInt64
-BigUint64
-*/
