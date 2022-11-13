@@ -112,9 +112,9 @@ export class View {
   constructor(args) {
     try {
       if (args instanceof Block) {
-        this.#arrayBuffer = args.memoryBlock.toArrayBuffer();
+        this.#arrayBuffer = args.toArrayBuffer();
         this.#byteOffset = args.byteOffset;
-        this.#byteLength = args.length;
+        this.#byteLength = args.byteLength;
         return;
       } else if (!(Types.isSimpleObject(args))) {
         throw "Argument must be a simple object.";
@@ -211,7 +211,7 @@ export class View {
         }
         byteLength = args.byteLength;
       } else {
-        byteLength = this.byteLength - byteOffset;
+        byteLength = this.#byteLength - byteOffset;
       }
       return new View({
         memoryBlock: new Block(this.#arrayBuffer),
@@ -246,6 +246,132 @@ export class View {
     } catch (e) {
       ErrorLog.rethrow({
         functionName: "View.set",
+        error: e,
+      });
+    }
+  }
+  copyWithin(args) {
+    try {
+      if (!(Types.isSimpleObject(args))) {
+        throw "Arguments must be a simple object.";
+      }
+      let fromStart;
+      let fromEnd;
+      let toStart;
+      let toEnd;
+      let byteLength;
+      if (Object.hasOwn(args, "fromStart")) {
+        if (Types.isInteger(args.fromStart)) {
+          throw "Argument \"fromStart\" must be an integer.";
+        }
+        fromStart = args.fromStart;
+        if (fromStart < 0) {
+          throw "Argument \"fromStart\" must be non-negative.";
+        }
+        if (fromStart >= this.#byteLength) {
+          throw "Argument \"fromStart\" must be less than this.byteLength.";
+        }
+      }
+      if (Object.hasOwn(args, "fromEnd")) {
+        if (Types.isInteger(args.fromEnd)) {
+          throw "Argument \"fromEnd\" must be an integer.";
+        }
+        fromEnd = args.fromEnd;
+        if (fromEnd < 0) {
+          throw "Argument \"fromEnd\" must be non-negative.";
+        }
+        if (fromEnd >= this.#byteLength) {
+          throw "Argument \"fromEnd\" must be less than this.byteLength.";
+        }
+      }
+      if (Object.hasOwn(args, "toStart")) {
+        if (Types.isInteger(args.toStart)) {
+          throw "Argument \"toStart\" must be an integer.";
+        }
+        toStart = args.toStart;
+        if (toStart < 0) {
+          throw "Argument \"toStart\" must be non-negative.";
+        }
+        if (toStart >= this.#byteLength) {
+          throw "Argument \"toStart\" must be less than this.byteLength.";
+        }
+      }
+      if (Object.hasOwn(args, "toEnd")) {
+        if (Types.isInteger(args.toEnd)) {
+          throw "Argument \"toEnd\" must be an integer.";
+        }
+        toEnd = args.toEnd;
+        if (toEnd < 0) {
+          throw "Argument \"toEnd\" must be non-negative.";
+        }
+        if (toEnd >= this.#byteLength) {
+          throw "Argument \"toEnd\" must be less than this.byteLength.";
+        }
+      }
+      if (Object.hasOwn(args, "byteLength")) {
+        if (Types.isInteger(args.byteLength)) {
+          throw "Argument \"byteLength\" must be an integer.";
+        }
+        byteLength = args.byteLength;
+        if (byteLength < 0) {
+          throw "Argument \"byteLength\" must be non-negative.";
+        }
+        if (byteLength >= this.#byteLength) {
+          throw "Argument \"byteLength\" must be less than this.byteLength.";
+        }
+      }
+      if (Types.isUndefined(byteLength)) {
+        let fromByteLength = fromEnd - fromStart;
+        let toByteLength = toEnd - toStart;
+        if (Types.isUndefined(fromByteLength)) {
+          if (Types.isUndefined(toByteLength)) {
+            throw "Insufficient arguments to calculate byteLength";
+          }
+          byteLength = toByteLength;
+        } else {
+          if (!(Types.isUndefined(toByteLength))) {
+            if (fromByteLength !== toByteLength) {
+              throw "The byteLengths are not coherent.";
+            }
+          }
+          byteLength = fromByteLength;
+        }
+      } else {
+        if (Types.isUndefined(fromStart)) {
+          if (Types.isUndefined(fromEnd)) {
+            throw "At least two of the following must be provided: fromStart, fromEnd, byteLength";
+          }
+          fromStart = fromEnd - byteLength;
+        } else {
+          if (!(Types.isUndefined(fromEnd))) {
+            if (fromStart + byteLength !== fromEnd) {
+              throw "Arguments fromStart, fromEnd, byteLength are not coherent";
+            }
+          } else {
+            fromEnd = fromStart + byteLength;
+          }
+        }
+        if (Types.isUndefined(toStart)) {
+          if (Types.isUndefined(toEnd)) {
+            throw "At least two of the following must be provided: toStart, toEnd, byteLength";
+          }
+          toStart = toEnd - byteLength;
+        } else {
+          if (Types.isUndefined(toEnd)) {
+            toEnd = toStart + byteLength;
+          } else {
+            if (toStart + byteLength !== toEnd) {
+              throw "Arguments toStart, toEnd, byteLength are not coherent";
+            }
+          }
+        }
+      }
+      // Uint8Array is used here to allow the bytes to be copied, it does not mean the bytes represent unsigned integers
+      const thisView = new Uint8Array(this.#arrayBuffer, this.#byteOffset, this.#byteLength);
+      thisView.copyWithin(toStart, fromStart, fromEnd);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "View.copyWithin",
         error: e,
       });
     }
