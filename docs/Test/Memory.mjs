@@ -536,11 +536,11 @@ export class DataArray {
       if (!(Types.isSimpleObject(args))) {
         throw "Arguments must be a simple object.";
       }
-      if (Object.hasOwn(args, "memoryView")) {
+      if (!(Object.hasOwn(args, "memoryView"))) {
         throw "Argument \"memoryView\" is required.";
       }
       this.#memoryView = args.memoryView;
-      if (Object.hasOwn(args, "ElementClass")) {
+      if (!(Object.hasOwn(args, "ElementClass"))) {
         throw "Argument \"ElementClass\" is required.";
       }
       this.#ElementClass = args.ElementClass;
