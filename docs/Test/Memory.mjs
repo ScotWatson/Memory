@@ -725,10 +725,10 @@ export class Uint8 {
       } else {
         throw "Invalid Arguments";
       }
-      if (thisView.byteLength !== this.BYTE_LENGTH) {
+      if (thisView.byteLength !== Uint8.BYTE_LENGTH) {
         throw "memoryView length is invalid.\n"
             + "  thisView.byteLength: " + thisView.byteLength + "\n"
-            + "  this.BYTE_LENGTH: " + this.BYTE_LENGTH;
+            + "  Uint8.BYTE_LENGTH: " + Uint8.BYTE_LENGTH;
       }
       this.#view = thisView.toUint8Array();
     } catch (e) {
