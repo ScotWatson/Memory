@@ -570,12 +570,12 @@ export class DataArray {
       });
     }
   }
-  get BYTES_PER_ELEMENT() {
+  get BYTE_LENGTH() {
     try {
-      return this.#ElementClass.BYTES_PER_ELEMENT;
+      return this.#ElementClass.BYTE_LENGTH;
     } catch (e) {
       ErrorLog.rethrow({
-        functionName: "get DataArray.BYTES_PER_ELEMENT",
+        functionName: "get DataArray.BYTE_LENGTH",
         error: e,
       });
     }
@@ -620,10 +620,10 @@ export class DataArray {
       } else {
         throw "Invalid Argument";
       }
-      const byteOffset = this.#ElementClass.BYTES_PER_ELEMENT * index;
+      const byteOffset = this.#ElementClass.BYTE_LENGTH * index;
       const slice = this.#memoryView.createSlice({
         byteOffset: byteOffset,
-        byteLength: this.#ElementClass.BYTES_PER_ELEMENT,
+        byteLength: this.#ElementClass.BYTE_LENGTH,
       });
       return new this.#ElementClass(slice);
     } catch (e) {
@@ -656,7 +656,7 @@ export class DataArray {
       if (!(Types.isInteger(args.length))) {
         throw "Argument \"length\" must be an integer.";
       }
-      const byteLength = args.length * this.#ElementClass.BYTES_PER_ELEMENT;
+      const byteLength = args.length * this.#ElementClass.BYTE_LENGTH;
       const fromSlice = this.#memoryView.createSlice({
         byteOffset: args.fromIndex,
         bytelength: byteLength,
