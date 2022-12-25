@@ -6,6 +6,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 import * as ErrorLog from "https://scotwatson.github.io/Debug/Test/ErrorLog.mjs";
 import * as Types from "https://scotwatson.github.io/Debug/Test/Types.mjs";
 
+const ThisSharedArrayBuffer = (function () {
+  if (!SharedArrayBuffer) {
+    return ArrayBuffer;
+  }
+  return SharedArrayBuffer;
+})();
+
 export class Block {
   #arrayBuffer;
   constructor(args) {
@@ -13,7 +20,7 @@ export class Block {
       if (args instanceof ArrayBuffer) {
         this.#arrayBuffer = args;
         return;
-      } else if (args instanceof SharedArrayBuffer) {
+      } else if (args instanceof ThisSharedArrayBuffer) {
         this.#arrayBuffer = args;
         return;
       } else if (!(Types.isSimpleObject(args))) {
@@ -30,7 +37,7 @@ export class Block {
         let shared;
         if (args.arrayBuffer instanceof ArrayBuffer) {
           shared = false;
-        } else if (args.arrayBuffer instanceof SharedArrayBuffer) {
+        } else if (args.arrayBuffer instanceof ThisSharedArrayBuffer) {
           shared = true;
         } else {
           throw "Argument \"arrayBuffer\" requires ArrayBuffer or SharedArrayBuffer.";
@@ -54,7 +61,7 @@ export class Block {
           if (!(self.crossOriginIsolated)) {
             throw "Creating a shared Block requires Cross-Origin Isolation.";
           }
-          this.#arrayBuffer = new SharedArrayBuffer(args.byteLength);
+          this.#arrayBuffer = new ThisSharedArrayBuffer(args.byteLength);
         } else {
           this.#arrayBuffer = new ArrayBuffer(args.byteLength);
         }
@@ -81,7 +88,7 @@ export class Block {
     try {
       if (this.#arrayBuffer instanceof ArrayBuffer) {
         return false;
-      } else if (this.#arrayBuffer instanceof SharedArrayBuffer) {
+      } else if (this.#arrayBuffer instanceof ThisSharedArrayBuffer) {
         return true;
       } else {
         throw "Internal Logic Error: Internal buffer must be of type ArrayBuffer or SharedArrayBuffer.";
@@ -167,7 +174,7 @@ export class View {
   }
   get shareable() {
     try {
-      return (this.#arrayBuffer instanceof self.SharedArrayBuffer);
+      return (this.#arrayBuffer instanceof ThisSharedArrayBuffer);
     } catch (e) {
       ErrorLog.rethrow({
         functionName: "get View.shareable",
