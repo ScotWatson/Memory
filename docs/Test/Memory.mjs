@@ -7,7 +7,7 @@ import * as ErrorLog from "https://scotwatson.github.io/Debug/Test/ErrorLog.mjs"
 import * as Types from "https://scotwatson.github.io/Debug/Test/Types.mjs";
 
 const ThisSharedArrayBuffer = (function () {
-  if (!SharedArrayBuffer) {
+  if (typeof SharedArrayBuffer === "undefined") {
     return ArrayBuffer;
   }
   return SharedArrayBuffer;
