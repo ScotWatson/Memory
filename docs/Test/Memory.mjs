@@ -570,12 +570,12 @@ export class DataArray {
       });
     }
   }
-  get BYTE_LENGTH() {
+  get BYTES_PER_ELEMENT() {
     try {
       return this.#ElementClass.BYTE_LENGTH;
     } catch (e) {
       ErrorLog.rethrow({
-        functionName: "get DataArray.BYTE_LENGTH",
+        functionName: "get DataArray.BYTES_PER_ELEMENT",
         error: e,
       });
     }
@@ -726,7 +726,9 @@ export class Uint8 {
         throw "Invalid Arguments";
       }
       if (thisView.byteLength !== this.BYTE_LENGTH) {
-        throw "memoryView length is invalid.";
+        throw "memoryView length is invalid.\n"
+            + "  thisView.byteLength: " + thisView.byteLength + "\n"
+            + "  this.BYTE_LENGTH: " + this.BYTE_LENGTH;
       }
       this.#view = thisView.toUint8Array();
     } catch (e) {
