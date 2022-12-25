@@ -227,7 +227,7 @@ export class View {
       });
     } catch (e) {
       ErrorLog.rethrow({
-        functionName: "get View.createSlice",
+        functionName: "View.createSlice",
         error: e,
       });
     }
@@ -607,11 +607,14 @@ export class DataArray {
   at(args) {
     try {
       let index;
-      if (typeof args === "number") {
+      if (Types.isInteger(args)) {
         index = args;
       } else if (Types.isSimpleObject(args)) {
         if (!(args.hasOwnProperty("index"))) {
           throw "Argument \"index\" is required.";
+        }
+        if (!(Types.isInteger(args.index))) {
+          throw "Argument \"index\" must be an integer.";
         }
         index = args.index;
       } else {
