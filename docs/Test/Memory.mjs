@@ -184,6 +184,7 @@ export class View {
   }
   createSlice(args) {
     try {
+      console.log(args);
       if (args === undefined) {
         return new View({
           arrayBuffer: this.#arrayBuffer,
