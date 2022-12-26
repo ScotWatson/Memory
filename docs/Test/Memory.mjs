@@ -118,10 +118,9 @@ export class View {
   #byteLength;
   constructor(args) {
     try {
-      console.log(args);
       if (args instanceof Block) {
         this.#arrayBuffer = args.toArrayBuffer();
-        this.#byteOffset = args.byteOffset;
+        this.#byteOffset = 0;
         this.#byteLength = args.byteLength;
         return;
       } else if (!(Types.isSimpleObject(args))) {
@@ -185,7 +184,6 @@ export class View {
   }
   createSlice(args) {
     try {
-      console.log(args);
       if (args === undefined) {
         return new View({
           arrayBuffer: this.#arrayBuffer,
