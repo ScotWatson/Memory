@@ -118,6 +118,7 @@ export class View {
   #byteLength;
   constructor(args) {
     try {
+      console.log(args);
       if (args instanceof Block) {
         this.#arrayBuffer = args.toArrayBuffer();
         this.#byteOffset = args.byteOffset;
