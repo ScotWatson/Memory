@@ -219,7 +219,7 @@ export class View {
         if (args.byteLength < 0) {
           throw "Argument \"byteLength\" must be non-negative.";
         }
-        if (byteOffset + args.byteLength >= this.#byteLength) {
+        if (byteOffset + args.byteLength > this.#byteLength) {
           throw "Argument \"byteLength\" must not exceed length of the block.";
         }
         byteLength = args.byteLength;
