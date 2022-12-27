@@ -151,6 +151,9 @@ export class View {
         if (args.byteLength < 0) {
           throw "Argument \"byteLength\" must be non-negative.";
         }
+        if (this.#byteOffset + args.byteLength > this.#arrayBuffer.byteLength) {
+          throw "Argument \"byteLength\" must not exceed length of the block.";
+        }
         this.#byteLength = args.byteLength;
       } else {
         this.#byteLength = this.#arrayBuffer.byteLength - this.#byteOffset;
@@ -215,6 +218,9 @@ export class View {
         }
         if (args.byteLength < 0) {
           throw "Argument \"byteLength\" must be non-negative.";
+        }
+        if (byteOffset + args.byteLength >= this.#byteLength) {
+          throw "Argument \"byteLength\" must not exceed length of the block.";
         }
         byteLength = args.byteLength;
       } else {
