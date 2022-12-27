@@ -243,10 +243,10 @@ export class View {
       if (!(Types.isSimpleObject(args))) {
         throw "Arguments must be a simple object.";
       }
-      if (Object.hasOwn(args, "from")) {
+      if (!(Object.hasOwn(args, "from"))) {
         throw "Argument \"from\" is required.";
       }
-      if (args.from instanceof View) {
+      if (!(args.from instanceof View)) {
         throw "Argument \"from\" must be of class View.";
       }
       if (args.from.byteLength !== this.#byteLength) {
