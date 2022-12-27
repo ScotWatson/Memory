@@ -186,7 +186,7 @@ export class View {
     try {
       if (args === undefined) {
         return new View({
-          arrayBuffer: this.#arrayBuffer,
+          memoryBlock: new Block(this.#arrayBuffer),
           byteOffset: this.#byteOffset,
           byteLength: this.#byteLength,
         });
@@ -201,7 +201,7 @@ export class View {
         if (args.byteOffset < 0) {
           throw "Argument \"byteOffset\" must be non-negative.";
         }
-        if (args.byteOffset >= this.#arrayBuffer.byteLength) {
+        if (args.byteOffset >= this.#byteLength) {
           throw "Argument \"byteOffset\" must not exceed length of the block.";
         }
         byteOffset = args.byteOffset;
