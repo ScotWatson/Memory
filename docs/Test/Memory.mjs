@@ -627,7 +627,6 @@ export class DataArray {
         throw "Invalid Argument";
       }
       const byteOffset = this.#ElementClass.BYTE_LENGTH * index;
-      console.log(this.#memoryView);
       const slice = this.#memoryView.createSlice({
         byteOffset: byteOffset,
         byteLength: this.#ElementClass.BYTE_LENGTH,
