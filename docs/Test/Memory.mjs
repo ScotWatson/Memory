@@ -524,7 +524,7 @@ export function createSlicedCopy(args) {
   const newBlock = new Block({
     byteLength: args.end - args.start,
   });
-  const slicedView = args.memoryView.createSlicedCopy({
+  const slicedView = args.memoryView.createSlice({
     start: args.start,
     end: args.end,
   });
@@ -905,16 +905,16 @@ export class Uint8 {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -967,16 +967,16 @@ export class Sint8 {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1029,16 +1029,16 @@ export class Uint16BE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1091,16 +1091,16 @@ export class Uint16LE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1153,16 +1153,16 @@ export class Sint16BE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1215,16 +1215,16 @@ export class Sint16LE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1277,16 +1277,16 @@ export class Uint32BE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1339,16 +1339,16 @@ export class Uint32LE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1401,16 +1401,16 @@ export class Sint32BE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1463,16 +1463,16 @@ export class Sint32LE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1525,16 +1525,16 @@ export class Float32BE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1585,16 +1585,16 @@ export class Float32LE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1645,16 +1645,16 @@ export class Float64BE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1705,16 +1705,16 @@ export class Float64LE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1765,16 +1765,16 @@ export class Uint64BE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1827,16 +1827,16 @@ export class Uint64LE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1889,16 +1889,16 @@ export class Sint64BE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
@@ -1951,16 +1951,16 @@ export class Sint64LE {
         let thisView;
         if (isView(args)) {
           thisView = args;
-        } else if (Object.hasOwn(args, "view")) {
-          if (!(isView(args.view))) {
-            throw "Argument \"view\" must be a Memory.View.";
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
           }
-          thisView = args.view;
+          thisView = args.memoryView;
         } else {
           throw "Invalid arguments.";
         }
         if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
-          throw "Argument \"view\" must be equal in length to the data type.";
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
         }
         return thisView.toDataView();
       })();
