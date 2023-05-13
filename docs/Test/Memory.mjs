@@ -533,6 +533,176 @@ export function createSlicedCopy(args) {
   return newBlock;
 }
 
+export class ViewArray {
+  #memoryView;
+  #elementByteLength;
+  #length;
+  constructor(args) {
+    try {
+      if (!(Types.isSimpleObject(args))) {
+        throw "Arguments must be a simple object.";
+      }
+      if (!(Object.hasOwn(args, "memoryView"))) {
+        throw "Argument \"memoryView\" is required.";
+      }
+      this.#memoryView = args.memoryView;
+      if (!(Object.hasOwn(args, "elementByteLength"))) {
+        throw "Argument \"elementByteLength\" is required.";
+      }
+      this.#elementByteLength = args.elementByteLength;
+      this.#length = this.#memoryView.byteLength / this.#elementByteLength;
+      if (!(Types.isInteger(this.#length))) {
+        throw "memoryView.byteLength is not a multiple of elementByteLength.";
+      }
+      if (Object.hasOwn(args, "length")) {
+        if (length !== args.length) {
+          throw "Invalid Length";
+        }
+      }
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "ViewArray constructor",
+        error: e,
+      });
+    }
+  }
+  get BYTES_PER_ELEMENT() {
+    try {
+      return this.#elementByteLength;
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get ViewArray.BYTES_PER_ELEMENT",
+        error: e,
+      });
+    }
+  }
+  get length() {
+    try {
+      return this.#length;
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get ViewArray.length",
+        error: e,
+      });
+    }
+  }
+  get [Symbol.iterator]() {
+    try {
+      return (function* () {
+        for (let i = 0; i < this.#length; ++i) {
+          yield this.at(i);
+        }
+      });
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get ViewArray[Symbol.iterator]",
+        error: e,
+      });
+    }
+  }
+  at(args) {
+    try {
+      let index;
+      if (Types.isInteger(args)) {
+        index = args;
+      } else if (Types.isSimpleObject(args)) {
+        if (!(args.hasOwnProperty("index"))) {
+          throw "Argument \"index\" is required.";
+        }
+        if (!(Types.isInteger(args.index))) {
+          throw "Argument \"index\" must be an integer.";
+        }
+        index = args.index;
+      } else {
+        throw "Invalid Argument";
+      }
+      const byteOffset = this.#elementByteLength * index;
+      const slice = this.#memoryView.createSlice({
+        byteOffset: byteOffset,
+        byteLength: this.#elementByteLength,
+      });
+      return slice;
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "ViewArray.at",
+        error: e,
+      });
+    }
+  }
+  copyWithin(args) {
+    try {
+      if (!(Types.isSimpleObject(args))) {
+        throw "Arguments must be a simple object.";
+      }
+      if (!(Object.hasOwn(args, "toIndex"))) {
+        throw "Argument \"toIndex\" is required.";
+      }
+      if (!(Types.isInteger(args.toIndex))) {
+        throw "Argument \"toIndex\" must be an integer.";
+      }
+      if (!(Object.hasOwn(args, "fromIndex"))) {
+        throw "Argument \"fromIndex\" is required.";
+      }
+      if (!(Types.isInteger(args.fromIndex))) {
+        throw "Argument \"fromIndex\" must be an integer.";
+      }
+      if (!(Object.hasOwnProperty(args, "length"))) {
+        throw "Argument \"length\" is required.";
+      }
+      if (!(Types.isInteger(args.length))) {
+        throw "Argument \"length\" must be an integer.";
+      }
+      const byteLength = args.length * this.#elementByteLength;
+      const fromSlice = this.#memoryView.createSlice({
+        byteOffset: args.fromIndex,
+        bytelength: byteLength,
+      });
+      const toSlice = this.#memoryView.createSlice({
+        byteOffset: args.toIndex,
+        bytelength: byteLength,
+      });
+      toSlice.set(fromSlice);
+      return;
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "ViewArray.copyWithin",
+        error: e,
+      });
+    }
+  }
+  fill(args) {
+    try {
+      if (!(Types.isSimpleObject(args))) {
+        throw "Arguments must be a simple object.";
+      }
+      if (!(Object.hasOwn(args, "value"))) {
+        throw "Argument \"value\" is required.";
+      }
+      if (!(Object.hasOwn(args, "startIndex"))) {
+        throw "Argument \"startIndex\" is required.";
+      }
+      if (!(Types.isInteger(args.startIndex))) {
+        throw "Argument \"startIndex\" must be an integer.";
+      }
+      if (!(Object.hasOwn(args, "endIndex"))) {
+        throw "Argument \"endIndex\" is required.";
+      }
+      if (!(Types.isInteger(args.endIndex))) {
+        throw "Argument \"endIndex\" must be an integer.";
+      }
+      for (let i = args.startIndex; i < args.endIndex; ++i) {
+        this.at(i).set(args.value);
+      }
+      return;
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "ViewArray.fill",
+        error: e,
+      });
+    }
+  }
+}
+
 export class DataArray {
   #memoryView;
   #ElementClass;
@@ -713,30 +883,41 @@ export class DataArray {
   }
 }
 
+function isView(args) {
+    return (Object.hasOwn(args, "toDataView")
+           && Types.isFunction(args.toDataView)
+           && Object.hasOwn(args, "byteLength")
+           && Types.isInteger(args.byteLength));
+}
+
+// Uint8.value = number
 export class Uint8 {
-  #view;
+  #dataView;
   static get BYTE_LENGTH() {
     return 1;
   }
+  static set BYTE_LENGTH() {
+    throw "Uint8.BYTE_LENGTH is a constant.";
+  }
   constructor(args) {
     try {
-      let thisView;
-      if (args instanceof View) {
-        thisView = args;
-      } else if (Types.isSimpleObject(args)) {
-        if (!(Object.hasOwn(args, "memoryView"))) {
-          throw "Argument \"memoryView\" is required.";
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
         }
-        thisView = args.memoryView;
-      } else {
-        throw "Invalid Arguments";
-      }
-      if (thisView.byteLength !== Uint8.BYTE_LENGTH) {
-        throw "memoryView length is invalid.\n"
-            + "  thisView.byteLength: " + thisView.byteLength + "\n"
-            + "  Uint8.BYTE_LENGTH: " + Uint8.BYTE_LENGTH;
-      }
-      this.#view = thisView.toUint8Array();
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
     } catch (e) {
       ErrorLog.rethrow({
         functionName: "Uint8 constructor",
@@ -744,38 +925,1075 @@ export class Uint8 {
       });
     }
   }
-  set(args) {
+  get value() {
     try {
-      if (typeof args === "number") {
-        this.#view[0] = args;
-        return;
-      } else if (Types.isSimpleObject(args)) {
-        if (!(Object.hasOwn(args, "value"))) {
-          throw "Argument \"value\" is required.";
-        }
-        if (!(Types.isInteger(args.value))) {
-          throw "Argument \"value\" must be an integer.";
-        }
-        this.#view[0] = args.value;
-        return;
-      } else {
-        throw "Invalid Arguments";
+      return this.#dataView.getUint8(0);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Uint8.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isInteger(newValue)
+            && (0 <= newValue)
+            && (newValue < (2 ** 8)))) {
+        throw "Invalid new value.";
       }
+      this.#dataView.setUint8(0, newValue);
     } catch (e) {
       ErrorLog.rethrow({
-        functionName: "Uint8.set",
+        functionName: "set Uint8.value",
         error: e,
       });
     }
   }
-  valueOf() {
+};
+
+// Sint8.value = number
+export class Sint8 {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 1;
+  }
+  static set BYTE_LENGTH() {
+    throw "Sint8.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
     try {
-      return this.#view[0];
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
     } catch (e) {
       ErrorLog.rethrow({
-        functionName: "Uint8.valueOf",
+        functionName: "Sint8 constructor",
         error: e,
       });
     }
   }
-}
+  get value() {
+    try {
+      return this.#dataView.getInt8(0);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Sint8.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isInteger(newValue)
+            && (-(2 ** 7) <= newValue)
+            && (newValue < (2 ** 7)))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setInt8(0, newValue);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Sint8.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Uint16BE.value = number
+export class Uint16BE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 2;
+  }
+  static set BYTE_LENGTH() {
+    throw "Uint16BE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Uint16BE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getUint16(0, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Uint16BE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isInteger(newValue)
+            && (0 <= newValue)
+            && (newValue < (2 ** 16)))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setUint16(0, newValue, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Uint16BE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Uint16LE.value = number
+export class Uint16LE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 2;
+  }
+  static set BYTE_LENGTH() {
+    throw "Uint16LE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Uint16LE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getUint16(0, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Uint16LE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isInteger(newValue)
+            && (0 <= newValue)
+            && (newValue < (2 ** 16)))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setUint16(0, newValue, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Uint16LE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Sint16BE.value = number
+export class Sint16BE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 2;
+  }
+  static set BYTE_LENGTH() {
+    throw "Sint16BE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Sint16BE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getInt16(0, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Sint16BE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isInteger(newValue)
+            && (-(2 ** 15) <= newValue)
+            && (newValue < (2 ** 15)))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setInt16(0, newValue, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Sint16BE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Sint16LE.value = number
+export class Sint16LE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 2;
+  }
+  static set BYTE_LENGTH() {
+    throw "Sint16LE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Sint16LE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getInt16(0, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Sint16LE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isInteger(newValue)
+            && (-(2 ** 15) <= newValue)
+            && (newValue < (2 ** 15)))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setInt16(0, newValue, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Sint16LE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Uint32BE.value = number
+export class Uint32BE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 4;
+  }
+  static set BYTE_LENGTH() {
+    throw "Uint32BE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Uint32BE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getUint32(0, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Uint32BE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isInteger(newValue)
+            && (0 <= newValue)
+            && (newValue < (2 ** 16)))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setUint32(0, newValue, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Uint32BE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Uint32LE.value = number
+export class Uint32LE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 4;
+  }
+  static set BYTE_LENGTH() {
+    throw "Uint32LE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Uint32LE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getUint32(0, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Uint32LE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isInteger(newValue)
+            && (0 <= newValue)
+            && (newValue < (2 ** 16)))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setUint32(0, newValue, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Uint32LE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Sint32BE.value = number
+export class Sint32BE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 4;
+  }
+  static set BYTE_LENGTH() {
+    throw "Sint32BE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Sint32BE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getInt32(0, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Sint32BE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isInteger(newValue)
+            && (-(2 ** 15) <= newValue)
+            && (newValue < (2 ** 15)))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setInt32(0, newValue, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Sint32BE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Sint32LE.value = number
+export class Sint32LE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 4;
+  }
+  static set BYTE_LENGTH() {
+    throw "Sint32LE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Sint32LE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getInt32(0, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Sint32LE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isInteger(newValue)
+            && (-(2 ** 15) <= newValue)
+            && (newValue < (2 ** 15)))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setInt32(0, newValue, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Sint32LE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Float32BE.value = number
+export class Float32BE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 4;
+  }
+  static set BYTE_LENGTH() {
+    throw "Float32BE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Float32BE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getFloat32(0, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Float32BE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isNumber(newValue))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setFloat32(0, newValue, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Float32BE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Float32LE.value = number
+export class Float32LE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 4;
+  }
+  static set BYTE_LENGTH() {
+    throw "Float32LE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Float32LE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getFloat32(0, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Float32LE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isNumber(newValue))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setFloat32(0, newValue, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Float32LE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Float64BE.value = number
+export class Float64BE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 8;
+  }
+  static set BYTE_LENGTH() {
+    throw "Float64BE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Float64BE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getFloat64(0, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Float64BE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isNumber(newValue))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setFloat64(0, newValue, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Float64BE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Float64LE.value = number
+export class Float64LE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 8;
+  }
+  static set BYTE_LENGTH() {
+    throw "Float64LE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Float64LE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getFloat64(0, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Float64LE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isNumber(newValue))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setFloat64(0, newValue, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Float64LE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Uint64BE.value = bigint
+export class Uint64BE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 8;
+  }
+  static set BYTE_LENGTH() {
+    throw "Uint64BE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Uint64BE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getBigUint64(0, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Uint64BE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isBigInt(newValue)
+            && (newValue >= 0)
+            && (newValue < (2n ** 64n)))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setBigUint64(0, newValue, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Uint64BE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Uint64LE.value = bigint
+export class Uint64LE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 8;
+  }
+  static set BYTE_LENGTH() {
+    throw "Uint64LE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Uint64LE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getBigUint64(0, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Uint64LE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isBigInt(newValue)
+            && (newValue >= 0)
+            && (newValue < (2n ** 64n)))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setBigUint64(0, newValue, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Uint64LE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Sint64BE.value = bigint
+export class Sint64BE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 8;
+  }
+  static set BYTE_LENGTH() {
+    throw "Sint64BE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Uint64BE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getBigInt64(0, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Sint64BE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isBigInt(newValue)
+            && (newValue >= -(2n ** 63n))
+            && (newValue < (2n ** 63n)))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setBigInt64(0, newValue, false);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Sint64BE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Sint64LE.value = bigint
+export class Sint64LE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 8;
+  }
+  static set BYTE_LENGTH() {
+    throw "Sint64LE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "view")) {
+          if (!(isView(args.view))) {
+            throw "Argument \"view\" must be a Memory.View.";
+          }
+          thisView = args.view;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"view\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Sint64LE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return this.#dataView.getBigInt64(0, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Sint64LE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      if (!(Types.isBigInt(newValue)
+            && (newValue >= -(2n ** 63n))
+            && (newValue < (2n ** 63n)))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setBigInt64(0, newValue, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Sint64LE.value",
+        error: e,
+      });
+    }
+  }
+};
