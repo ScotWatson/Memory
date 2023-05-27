@@ -1997,3 +1997,130 @@ export class Sint64LE {
     }
   }
 };
+
+// Time_POSIX_S32LE = Date
+export class Time_POSIX_S32LE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 4;
+  }
+  static set BYTE_LENGTH() {
+    throw "Time_POSIX_S32LE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
+          }
+          thisView = args.memoryView;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Time_POSIX_S32LE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return new Date(this.#dataView.getInt32(0, true) * 1000);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Time_POSIX_S32LE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      let ms_ticks = newValue.getTime();
+      if (ms_ticks === NaN) {
+        throw "Invalid date.";
+      }
+      let sec_ticks = ms_ticks / 1000;
+      if (!(sec_ticks < (2 ** 32))) {
+        throw "Invalid new value.";
+      }
+      this.#dataView.setInt32(0, sec_ticks, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Time_POSIX_S32LE.value",
+        error: e,
+      });
+    }
+  }
+};
+
+// Time_POSIX_S64LE = Date
+export class Time_POSIX_S64LE {
+  #dataView;
+  static get BYTE_LENGTH() {
+    return 8;
+  }
+  static set BYTE_LENGTH() {
+    throw "Time_POSIX_S64LE.BYTE_LENGTH is a constant.";
+  }
+  constructor(args) {
+    try {
+      this.#dataView = (function () {
+        let thisView;
+        if (isView(args)) {
+          thisView = args;
+        } else if (Object.hasOwn(args, "memoryView")) {
+          if (!(isView(args.memoryView))) {
+            throw "Argument \"memoryView\" must be a Memory.View.";
+          }
+          thisView = args.memoryView;
+        } else {
+          throw "Invalid arguments.";
+        }
+        if (thisView.byteLength !== this.constructor.BYTE_LENGTH) {
+          throw "Argument \"memoryView\" must be equal in length to the data type.";
+        }
+        return thisView.toDataView();
+      })();
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "Time_POSIX_S64LE constructor",
+        error: e,
+      });
+    }
+  }
+  get value() {
+    try {
+      return new Date(this.#dataView.getInt64(0, true) * 1000);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "get Time_POSIX_S64LE.value",
+        error: e,
+      });
+    }
+  }
+  set value(newValue) {
+    try {
+      let ms_ticks = newValue.getTime();
+      if (ms_ticks === NaN) {
+        throw "Invalid date.";
+      }
+      let sec_ticks = ms_ticks / 1000;
+      this.#dataView.setInt64(0, sec_ticks, true);
+    } catch (e) {
+      ErrorLog.rethrow({
+        functionName: "set Time_POSIX_S64LE.value",
+        error: e,
+      });
+    }
+  }
+};
