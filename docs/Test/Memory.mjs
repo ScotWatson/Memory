@@ -2045,11 +2045,14 @@ export class Time_POSIX_S32LE {
   }
   set value(newValue) {
     try {
+      if (!(isTimestamp(newValue))) {
+        throw "Invalid new value.";
+      }
       let ms_ticks = newValue.getTime();
       if (ms_ticks === NaN) {
         throw "Invalid date.";
       }
-      let sec_ticks = ms_ticks / 1000;
+      let sec_ticks = Math.floor(ms_ticks / 1000);
       if (!(sec_ticks < (2 ** 32))) {
         throw "Invalid new value.";
       }
@@ -2110,6 +2113,9 @@ export class Time_POSIX_S64LE {
   }
   set value(newValue) {
     try {
+      if (!(isTimestamp(newValue))) {
+        throw "Invalid new value.";
+      }
       let ms_ticks = newValue.getTime();
       if (ms_ticks === NaN) {
         throw "Invalid date.";
