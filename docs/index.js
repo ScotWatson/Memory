@@ -16,6 +16,7 @@ const asyncErrorLog = (async function () {
     return await import("https://scotwatson.github.io/Debug/20230705/ErrorLog.mjs");
   } catch (e) {
     console.error(e);
+    throw e;
   }
 })();
 
@@ -24,6 +25,7 @@ const asyncMemory = (async function () {
     return await import("https://scotwatson.github.io/Memory/20230705/Memory.mjs");
   } catch (e) {
     console.error(e);
+    throw e;
   }
 })();
 
@@ -33,6 +35,7 @@ const asyncMemory = (async function () {
     start(modules);
   } catch (e) {
     console.error(e);
+    throw e;
   }
 })();
 
