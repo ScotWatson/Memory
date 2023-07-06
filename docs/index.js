@@ -53,7 +53,7 @@ async function start(evtWindow, ErrorLog, Memory) {
     test1();
     test2();
   } catch (e) {
-    ErrorLog.rethrow({
+    ErrorLog.finalCatch({
       functionName: "start",
       error: e,
     });
