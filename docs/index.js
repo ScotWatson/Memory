@@ -13,7 +13,9 @@ const asyncWindow = new Promise(function (resolve, reject) {
 
 const asyncErrorLog = (async function () {
   try {
-    return await import("https://scotwatson.github.io/Debug/20230705/ErrorLog.mjs");
+    const ret = await import("https://scotwatson.github.io/Debug/20230705/ErrorLog.mjs");
+    console.log(ret);
+    return ret;
   } catch (e) {
     console.error(e);
     throw e;
