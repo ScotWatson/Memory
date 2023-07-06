@@ -34,6 +34,7 @@ const asyncMemory = (async function () {
 (async function () {
   try {
     const modules = await Promise.all( [ asyncWindow, asyncErrorLog, asyncMemory ] );
+    console.log(modules);
     start(modules);
   } catch (e) {
     console.error(e);
