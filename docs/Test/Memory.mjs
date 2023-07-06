@@ -896,7 +896,7 @@ export class Uint8 {
   static get BYTE_LENGTH() {
     return 1;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Uint8.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -958,7 +958,7 @@ export class Sint8 {
   static get BYTE_LENGTH() {
     return 1;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Sint8.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1020,7 +1020,7 @@ export class Uint16BE {
   static get BYTE_LENGTH() {
     return 2;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Uint16BE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1082,7 +1082,7 @@ export class Uint16LE {
   static get BYTE_LENGTH() {
     return 2;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Uint16LE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1144,7 +1144,7 @@ export class Sint16BE {
   static get BYTE_LENGTH() {
     return 2;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Sint16BE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1206,7 +1206,7 @@ export class Sint16LE {
   static get BYTE_LENGTH() {
     return 2;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Sint16LE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1268,7 +1268,7 @@ export class Uint32BE {
   static get BYTE_LENGTH() {
     return 4;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Uint32BE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1330,7 +1330,7 @@ export class Uint32LE {
   static get BYTE_LENGTH() {
     return 4;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Uint32LE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1392,7 +1392,7 @@ export class Sint32BE {
   static get BYTE_LENGTH() {
     return 4;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Sint32BE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1454,7 +1454,7 @@ export class Sint32LE {
   static get BYTE_LENGTH() {
     return 4;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Sint32LE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1516,7 +1516,7 @@ export class Float32BE {
   static get BYTE_LENGTH() {
     return 4;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Float32BE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1576,7 +1576,7 @@ export class Float32LE {
   static get BYTE_LENGTH() {
     return 4;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Float32LE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1636,7 +1636,7 @@ export class Float64BE {
   static get BYTE_LENGTH() {
     return 8;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Float64BE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1696,7 +1696,7 @@ export class Float64LE {
   static get BYTE_LENGTH() {
     return 8;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Float64LE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1756,7 +1756,7 @@ export class Uint64BE {
   static get BYTE_LENGTH() {
     return 8;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Uint64BE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1818,7 +1818,7 @@ export class Uint64LE {
   static get BYTE_LENGTH() {
     return 8;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Uint64LE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1880,7 +1880,7 @@ export class Sint64BE {
   static get BYTE_LENGTH() {
     return 8;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Sint64BE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -1942,7 +1942,7 @@ export class Sint64LE {
   static get BYTE_LENGTH() {
     return 8;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Sint64LE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -2004,7 +2004,7 @@ export class Time_POSIX_S32LE {
   static get BYTE_LENGTH() {
     return 4;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Time_POSIX_S32LE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
@@ -2072,7 +2072,7 @@ export class Time_POSIX_S64LE {
   static get BYTE_LENGTH() {
     return 8;
   }
-  static set BYTE_LENGTH() {
+  static set BYTE_LENGTH(dummy) {
     throw "Time_POSIX_S64LE.BYTE_LENGTH is a constant.";
   }
   constructor(args) {
