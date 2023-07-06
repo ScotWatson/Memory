@@ -13,9 +13,7 @@ const asyncWindow = new Promise(function (resolve, reject) {
 
 const asyncErrorLog = (async function () {
   try {
-    const ret = await import("https://scotwatson.github.io/Debug/20230705/ErrorLog.mjs");
-    console.log(ret);
-    return ret;
+    return await import("https://scotwatson.github.io/Debug/20230705/ErrorLog.mjs");
   } catch (e) {
     console.error(e);
     throw e;
@@ -34,7 +32,6 @@ const asyncMemory = (async function () {
 (async function () {
   try {
     const modules = await Promise.all( [ asyncWindow, asyncErrorLog, asyncMemory ] );
-    console.log(modules);
     start(modules);
   } catch (e) {
     console.error(e);
@@ -42,7 +39,7 @@ const asyncMemory = (async function () {
   }
 })();
 
-async function start(evtWindow, ErrorLog, Memory) {
+async function start( [ evtWindow, ErrorLog, Memory ] ) {
   try {
     const buffer = new Memory.Block({
       byteLength: 1000,
